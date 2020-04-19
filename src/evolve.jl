@@ -32,12 +32,11 @@ function model_step!(model)
     if model.tick % 365 == 0
         model.year += 1
         # Update pollution level: nutrient inflow by affectors
-        model.affectors = length(filter(a -> !last(a).oss, model.agents)) #####
+        model.affectors = count(a -> !a.oss, allagents(model)) #####
         # checking the success of upgrade
         if model.outcomes.year_when_informed > 0 &&
            model.outcomes.year_of_full_upgrade <= model.year
-            model.outcomes.upgraded_households_sum =
-                length(filter(a -> last(a).oss, model.agents)) ######
+           model.outcomes.upgraded_households_sum = nagents(model) - model.affectors ######
         end
         #TODO: Logs
 
@@ -89,25 +88,23 @@ function model_step!(model)
 
         #Inform households, eventually enforcing.
         #TODO: This is a transcription of Netlogo and is pretty abysmal. Need to clean it up and perhaps move it to the agents section.
-        if model.municipality.legislation &&
-           length(filter(a -> !last(a).oss, model.agents)) > 0 ######
-            if length(filter(a -> last(a).oss, model.agents)) == 0 ######
-                for (_, agent) in
-                    filter(a -> !last(a).oss && !last(a).information, model.agents) ######
+        if model.municipality.legislation && model.affectors > 0 ######
+            if nagents(model) - model.affectors == 0 ######
+                for agent in Iterators.filter(a -> !a.oss && !a.information, allagents(model)) ######
                     agent.information = true
                     agent.implementation_lag = 0
                 end
             end
             # Enforcement after 5 years
             if model.houseowner_type == Enforced()
-                for (_, agent) in filter(a -> last(a).implementation_lag > 4, model.agents) #####
+                for agent in Iterators.filter(a -> a.implementation_lag > 4, allagents(model)) #####
                     agent.compliance = min(agent.compliance * 1.5, 0.99)
                 end
             end
         end
 
         # remember the year when all households were upgraded
-        if all(a -> last(a).oss, model.agents) && model.outcomes.year_of_full_upgrade == 0 #####
+        if all(a -> a.oss, allagents(model)) && model.outcomes.year_of_full_upgrade == 0 #####
             model.outcomes.year_of_full_upgrade = year
         end
 
@@ -128,4 +125,5 @@ function model_step!(model)
     #TODO: Logs
     #TODO: Profier? Probably not needed.
 end
+
 

@@ -12,7 +12,6 @@ function initialise(;
     if experiment.identifier != "none"
         if experiment.identifier == "transient-hysteresis"
             lake_state = ClearLake
-            #NOTE: renaming as above will allow us to return this struct to immutable
             experiment.nutrient_series = Constant()
         elseif experiment.identifier == "transient-hysteresis-down"
             lake_state = TurbidLake
@@ -37,14 +36,14 @@ function initialise(;
         :affectors => 0,
         :outcomes => Outcomes(),
         :init_nutrients => lake_state.nutrients,
-        :transient_nutrients => lake_state.nutrients,
-    ) #TODO: Why do we need this third nutrient counter?
+    )
     model = ABM(Household, space; properties = properties, scheduler = random_activation)
     for n in 1:numagents
         compliance = experiment.agents_uniform ? rand() : experiment.willingness_to_upgrade #NOTE: NetLogo implementation has a uniform houseowner type. Seems to be redundant, but if not, there needs to be an additional check here.
-        agent = Household(n, (1, 1), compliance, false, rand(Bool), 0)
+        agent = Household(n, (1, 1), compliance, false, false, 0)
         add_agent_single!(agent, model)
     end
     return model
 end
+
 

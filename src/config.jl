@@ -35,6 +35,7 @@ struct TransientDown <: NutrientSeries end
     houseowner_type::HouseOwner = Introverted()
     willingness_to_upgrade::Float64 = 0.2
     tolerance_level_affectors::Float64 = 50.0
+    neighbor_distance::Int = 3
     # Related to municipality
     regulate::Bool = false
     respond_direct::Bool = true
@@ -56,7 +57,7 @@ end
     year_when_nutrients_became_critical = 0 # remember the first year nutrients are above expectation level
     year_when_desired_pike_is_back = 0
     year_when_desired_level_is_back = 0
-    upgraded_households_sum = 0 # aggregates the number of upgraded oss each year
+    upgraded_households_sum = 0 # cumulatively aggregates the number of upgraded oss each year
     year_of_full_upgrade = 0 #remeber the year when all households finished their update
 end
 
@@ -154,4 +155,5 @@ end
 
 ClearLake = LakeState(0.7, 1.8, 20.0)
 TurbidLake = LakeState(2.5, 0.04, 84.0)
+
 

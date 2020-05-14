@@ -76,7 +76,8 @@ function model_step!(model)
 
         # remember the year when the desired state is restored
         # look only for this year after degredadion and regulation of system has started
-        if model.municipality.legislation && model.outcomes.year_when_desired_pike_is_back == 0
+        if model.municipality.legislation &&
+           model.outcomes.year_when_desired_pike_is_back == 0
             restoration_log!(model)
         end
     end
@@ -84,31 +85,32 @@ function model_step!(model)
     #TODO: Profier? Probably not needed.
 end
 
-function threshold_monitor(model::ABM{Household}; t::Pike=model.threshold_variable)
-    trigger = model.respond_direct ? 0 : rand()
-    trigger < pike_loss_perception!(model) #TODO: I don't like that this is mutating.
-end
-
-function threshold_monitor(model::ABM{Household}; t::Nutrients=model.threshold_variable)
-    model.lake.nutrients > model.critical_nutrients
-end
-
-function restoration_log!(model::ABM{Household}; t::Pike=model.threshold_variable)
-    if model.lake.pike > model.pike_expectation
-        model.outcomes.year_when_desired_pike_is_back = model.year
+function threshold_monitor(model::ABM{Household})
+    if model.threshold_variable isa Nutrients
+        model.lake.nutrients > model.critical_nutrients
+    elseif model.threshold_variable isa Pike
+        trigger = model.respond_direct ? 0 : rand()
+        trigger < pike_loss_perception!(model) #TODO: I don't like that this is mutating.
     end
+    false
 end
 
-function restoration_log!(model::ABM{Household}; t::Nutrients=model.threshold_variable)
-    if model.lake.nutrients < model.critical_nutrients
-        model.outcomes.year_when_desired_level_is_back = model.year
+function restoration_log!(model::ABM{Household})
+    if model.threshold_variable isa Nutrients
+        if model.lake.nutrients < model.critical_nutrients
+            model.outcomes.year_when_desired_level_is_back = model.year
+        end
+    elseif model.threshold_variable isa Pike
+        if model.lake.pike > model.pike_expectation
+            model.outcomes.year_when_desired_pike_is_back = model.year
+        end
     end
 end
 
 function regulate!(model::ABM{Household}, intervention::Planting)
     if model.lake.vegetation < 60
         #Up to 5% planting of vegetation per year
-        model.lake.vegetation += model.lake.vegetation*0.05*rand()
+        model.lake.vegetation += model.lake.vegetation * 0.05 * rand()
     end
 end
 
@@ -117,16 +119,14 @@ function regulate!(model::ABM{Household}, intervention::WastewaterTreatment)
     #TODO: This is a transcription of Netlogo and is pretty abysmal. Need to clean it up and perhaps move it to the agents section.
     if model.municipality.legislation && model.affectors > 0 ######
         if count(a -> a.oss, allagents(model)) == 0 ######
-            for agent in
-                Iterators.filter(a -> !a.oss && !a.information, allagents(model)) ######
+            for agent in Iterators.filter(a -> !a.oss && !a.information, allagents(model)) ######
                 agent.information = true
                 agent.implementation_lag = 0
             end
         end
         # Enforcement after 5 years
         if model.houseowner_type isa Enforced
-            for agent in
-                Iterators.filter(a -> a.implementation_lag > 4, allagents(model)) #####
+            for agent in Iterators.filter(a -> a.implementation_lag > 4, allagents(model)) #####
                 agent.compliance = min(agent.compliance * 1.5, 0.99)
             end
         end
@@ -145,6 +145,7 @@ end
 function regulate!(model::ABM{Household}, intervention::Trawling)
     if model.lake.bream > 14.0
         # up to 25% reduction in bream population via trawling per year
-        model.lake.bream -= model.lake.bream*0.25*rand()
+        model.lake.bream -= model.lake.bream * 0.25 * rand()
     end
 end
+

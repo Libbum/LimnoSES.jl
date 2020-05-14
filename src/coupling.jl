@@ -3,10 +3,10 @@ function dNutr(m::ABM{Household})
     #NOTE: This is the NetLogo implementation. Can we not just directly replace this with the `sewage_water` function? a*b+c - a*b => c
     #nutrients + local-sewage - local-losses
     #m.lake.nutrients +
-    (m.recycling_rate * m.lake.nutrients + sewage_water(m)) -
-    (m.recycling_rate * m.lake.nutrients)
+    #    (m.recycling_rate * m.lake.nutrients + sewage_water(m)) -
+    #    (m.recycling_rate * m.lake.nutrients)
 
-    #sewage_water(m)
+    sewage_water(m)
 end
 
 function pike_loss_perception!(m::ABM{Household})
@@ -35,13 +35,13 @@ function update_settings!(m::ABM{Household})
         elseif m.year > 11
             # check wether nutrient level has reached target
             if (
-                m.nutrient_series == TransientUp() &&
+                m.nutrient_series isa TransientUp &&
                 round(m.lake.nutrients; sigdigits = 2) >= m.target_nutrients
             ) || (
-                m.nutrient_series == TransientDown() &&
+                m.nutrient_series isa TransientDown &&
                 round(m.lake.nutrients; sigdigits = 2) <= m.target_nutrients
             )
-                if m.identifier == "biggs-baseline" && m.nutrient_series == TransientUp()
+                if m.identifier == "biggs-baseline" && m.nutrient_series isa TransientUp
                     m.nutrient_series = TransientDown()
                     m.target_nutrients = m.init_nutrients
                 else
@@ -57,10 +57,10 @@ function update_settings!(m::ABM{Household})
 end
 
 function update_nutrients!(m::ABM{Household})
-    if m.nutrient_series == TransientUp()
+    if m.nutrient_series isa TransientUp
         dn = m.lake.nutrients + m.nutrient_change
         m.lake.nutrients = dn > m.target_nutrients ? m.target_nutrients : dn
-    elseif m.nutrient_series == TransientDown()
+    elseif m.nutrient_series isa TransientDown
         dn = m.lake.nutrients - m.nutrient_change
         m.lake.nutrients = dn < m.target_nutrients ? m.target_nutrients : dn
     end

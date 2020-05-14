@@ -5,19 +5,19 @@ function initialise(;
     griddims = (25, 25),
     experiment = Experiment(),
     municipality = Municipality(),
-    lake_state = ClearLake,
-    lake_parameters = LakeParameters(),
+    lake_state = LakeState(Clear),
+    lake_parameters = LakeParameters(Martin),
 )
 
     if experiment.identifier != "none"
         if experiment.identifier == "transient-hysteresis"
-            lake_state = ClearLake
+            lake_state = LakeState(Clear)
             experiment.nutrient_series = Constant()
         elseif experiment.identifier == "transient-hysteresis-down"
-            lake_state = TurbidLake
+            lake_state = LakeState(Turbid)
             experiment.nutrient_series = Constant()
         elseif experiment.identifier == "biggs-baseline"
-            lake_state = ClearLake
+            lake_state = LakeState(Clear)
             experiment.nutrient_series = Constant()
         elseif experiment.identifier == "speed-to-tip"
             experiment.target_nutrients = 2.5

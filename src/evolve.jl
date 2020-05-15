@@ -87,10 +87,10 @@ end
 
 function threshold_monitor(model::ABM{Household})
     if model.threshold_variable isa Nutrients
-        model.lake.nutrients > model.critical_nutrients
+        return model.lake.nutrients > model.critical_nutrients
     elseif model.threshold_variable isa Pike
         trigger = model.respond_direct ? 0 : rand()
-        trigger < pike_loss_perception!(model) #TODO: I don't like that this is mutating.
+        return trigger < pike_loss_perception!(model) #TODO: I don't like that this is mutating.
     end
     false
 end

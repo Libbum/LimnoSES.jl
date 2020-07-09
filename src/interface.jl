@@ -76,10 +76,16 @@ function updateplots!(
     year.compliance[] = individual.compliance
 end
 
-function interface(data::InterfaceData, agent_count::Integer, simlength::Integer)
+function interface(data::InterfaceData)
+    # pull essentials from data
+    agent_count = maximum(data.individual.id)
+    simlength = size(data.daily,1) - 1 #Don't count the 0th row
+
+    # assign info to observables for plotting
     day = DailyObservable(data.daily)
     year = YearlyObservable(data, agent_count)
 
+    # ready the scene and generate initial layouts
     scene, layout = layoutscene(resolution = (1920, 1080), backgroundcolor = :white)
     dax =
         layout[1:3, 1] = [
@@ -89,6 +95,57 @@ function interface(data::InterfaceData, agent_count::Integer, simlength::Integer
     hidexdecorations!(dax[1], grid = false)
     hidexdecorations!(dax[2], grid = false)
 
+    yax =
+        layout[1:3, 2] = [
+            LAxis(scene, title = title)
+            for title in ["Nutrients", "Pike Loss Perception", "Upgrade Efficiency"]
+        ]
+    linkxaxes!(yax[1], yax[2], yax[3])
+    hidexdecorations!(yax[1], grid = false)
+    hidexdecorations!(yax[2], grid = false)
+
+    aax =
+        layout[1:3, 3] = [
+            LAxis(scene, title = title)
+            for title in [
+                "Informed Households",
+                "Upgraded Households",
+                "Willingness to Upgrade",
+            ]
+        ]
+
+    # Plot initial data
+    lp = lines!(dax[1], day.pike, color = :red)
+    lb = lines!(dax[1], day.bream, color = :blue)
+    layout[1, 1] = LLegend(
+        scene,
+        [lp, lb],
+        ["Pike", "Bream"],
+        tellwidth = false,
+        halign = :right,
+        valign = :center,
+    )
+    lines!(dax[2], day.sewage)
+    lines!(dax[3], day.vegetation)
+
+    lines!(yax[1], year.nutrients)
+    lines!(yax[2], year.plp)
+    lines!(yax[3], year.upeff)
+    barplot!(aax[1], year.info)
+    barplot!(aax[2], year.oss)
+    plot!(aax[3], histogram(nbins = 10), year.compliance)
+
+    #TODO: fix up bars and histograms. They suck.
+#    color        :black
+#  colormap     :viridis
+#  colorrange   AbstractPlotting.Automatic()
+#  fillto       0.0
+#  marker       GeometryBasics.HyperRectangle
+#  strokecolor  :white
+#  strokewidth  0
+#  width        AbstractPlotting.Automatic()
+
+    # Control system
     resetbutton = LButton(
         scene,
         label = "reset",
@@ -145,53 +202,6 @@ function interface(data::InterfaceData, agent_count::Integer, simlength::Integer
 
     layout[4, 1:2] = grid!(controls, tellwidth = false, tellheight = true)
 
-    yax =
-        layout[1:3, 2] = [
-            LAxis(scene, title = title)
-            for title in ["Nutrients", "Pike Loss Perception", "Upgrade Efficiency"]
-        ]
-    linkxaxes!(yax[1], yax[2], yax[3])
-    hidexdecorations!(yax[1], grid = false)
-    hidexdecorations!(yax[2], grid = false)
-
-    aax =
-        layout[1:3, 3] = [
-            LAxis(scene, title = title)
-            for title in [
-                "Informed Households",
-                "Upgraded Households",
-                "Willingness to Upgrade",
-            ]
-        ]
-
-    lp = lines!(dax[1], day.pike, color = :red)
-    lb = lines!(dax[1], day.bream, color = :blue)
-    layout[1, 1] = LLegend(
-        scene,
-        [lp, lb],
-        ["Pike", "Bream"],
-        tellwidth = false,
-        halign = :right,
-        valign = :center,
-    )
-    lines!(dax[2], day.sewage)
-    lines!(dax[3], day.vegetation)
-
-    lines!(yax[1], year.nutrients)
-    lines!(yax[2], year.plp)
-    lines!(yax[3], year.upeff)
-    barplot!(aax[1], year.info)
-    barplot!(aax[2], year.oss)
-    plot!(aax[3], histogram(nbins = 10), year.compliance)
-
-#    color        :black
-#  colormap     :viridis
-#  colorrange   AbstractPlotting.Automatic()
-#  fillto       0.0
-#  marker       GeometryBasics.HyperRectangle
-#  strokecolor  :white
-#  strokewidth  0
-#  width        AbstractPlotting.Automatic()
     # Only useful until MakieLayout has a toggle button
     on(runbutton.clicks) do n
         t = runbutton.label[] == "run" ? "stop" : "run"

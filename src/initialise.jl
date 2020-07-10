@@ -30,7 +30,7 @@ function initialise(;
 
     #TODO: This needs to be nicer. Not sure of the best way to extend _state and _parameters at the same time here.
     if lake_parameters isa LakeParameters{Scheffer}
-        lake_parameters = lake_parameters[2:3] #TODO: Check this. We moved away from SVectors since we want to make things mutable
+        lake_state = lake_state[1:2]
     end
 
     prob = ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)

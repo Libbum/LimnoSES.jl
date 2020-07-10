@@ -1,6 +1,19 @@
-export sewage_water
+export sewage_water, vegetation
 
-# TODO: The interpertetation of Vegetation in these models are different. We need to show this correctly in the interface/docs
+# A couple of different vegetation extractors, depending on the shape of your data
+# Good for `model.lake`
+function vegetation(
+    lake::OrdinaryDiffEq.ODEIntegrator{A,B,C,D,E,<:LakeParameters{Scheffer}},
+) where {A,B,C,D,E}
+    bream = lake.sol.u[1, :]
+    @. lake.p.K * (lake.p.H₃^2 / (lake.p.H₃^2 + bream^2))
+end
+
+# Good for a singular bream vector
+function vegetation(B::Vector{Float64}, p::LakeParameters{Scheffer})
+    @. p.K * (p.H₃^2 / (p.H₃^2 + B^2))
+end
+
 function lake_dynamics!(du, u, p::LakeParameters{Scheffer}, t)
     #TODO: New intervention dynamics not considered for Scheffer model
     B, P = u # g⋅m⁻² bream/pike density

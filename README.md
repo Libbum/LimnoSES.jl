@@ -20,8 +20,11 @@ model = initialise(
                 houseowner_type = Social(),
                 regulate = true,
                 respond_direct = false,
+                # Note: Other interventions are not currently implemented for the Scheffer model.
+                # Turn WastewaterTreatment on and off by swapping these lines, or through the
+                # `regulate` boolean above.
                 interventions = [WastewaterTreatment()],
-                # interventions = [],
+                # interventions = [], 
             ),
             100,
         ),

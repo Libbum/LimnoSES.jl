@@ -4,8 +4,8 @@ function initialise(;
     griddims = (25, 25),
     experiment = Experiment(),
     municipalities = Dict("main" => (Governance(), 100)),
-    lake_state = lake_initial_state(Clear),
-    lake_parameters = LakeParameters(Martin, first(lake_state)),
+    lake_state = lake_initial_state(Turbid),
+    lake_parameters = LakeParameters(Scheffer, first(lake_state)),
 )
     @assert prod(griddims) >=
             sum(last(v) for v in values(municipalities)) + length(municipalities) "Total agents (municipalities + households) cannot be greater than the grid size"
@@ -30,7 +30,7 @@ function initialise(;
 
     #TODO: This needs to be nicer. Not sure of the best way to extend _state and _parameters at the same time here.
     if lake_parameters isa LakeParameters{Scheffer}
-        lake_parameters = lake_parameters[2:3] #TODO: Check this. We moved away from SVectors since we want to make things mutable
+        lake_state = lake_state[1:2]
     end
 
     prob = ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)

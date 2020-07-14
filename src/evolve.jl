@@ -58,6 +58,7 @@ function model_step!(model)
     # Update bream stock, pike stock, vegetation and nutrients (daily)
     OrdinaryDiffEq.step!(model.lake, 365.0, true)
     model.lake.p.nutrients += sewage_water(model)
+    u_modified!(model.lake, true)
 
     # Interventions which neccesitate lake-wide changes
     aggregate_regulate!(model)
@@ -140,7 +141,7 @@ end
 
 function aggregate_regulate!(model::ABM)
     # Wastewater is internal to the municipality and therefore does not need to update rates.
-
+    # TODO: clean this up into a loop or macro
     new_rate = 0.0
     for planter in Iterators.filter(
         m -> m.regulate && any(x -> x isa Planting, m.interventions),
@@ -176,6 +177,7 @@ function aggregate_regulate!(model::ABM)
         end
     end
     model.lake.p.mp = model.init_pike_mortality + new_rate
+    u_modified!(model.lake, true)
 end
 
 function plant!(model::ABM, municipality::Municipality)

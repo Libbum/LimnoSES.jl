@@ -269,9 +269,8 @@ struct X3 <: LakeDefinition end
 
 lake_initial_state(nutrients::Float64, bream::Float64, pike::Float64, vegetation::Float64) =
     (nutrients, [bream, pike, vegetation])
-lake_initial_state(::Type{Clear}) = (0.7, [20.0, 1.8, 50.0])
-lake_initial_state(::Type{Turbid}) = (2.5, [84.0, 0.04, 5.4])
-lake_initial_state(::Type{X1}) = (1.1, [60.0, 0.5, 10.0])
-lake_initial_state(::Type{X2}) = (0.8, [60.0, 0.5, 10.0])
-lake_initial_state(::Type{X3}) = (0.8, [65.0, 0.2, 5.0])
-
+lake_initial_state(::Type{Clear}) = (0.7, [15.093, 1.947, 74.333])
+lake_initial_state(::Type{Turbid}) = (2.5, [83.085, 0.032, 6.390])
+lake_initial_state(::Type{X1}) = (2.2, [60.036,  0.738, 11.654])
+lake_initial_state(::Type{X2}) = (1.05, [60.036, 0.738, 11.654])
+lake_initial_state(::Type{X3}) = (1.05, [65.984, 0.183, 9.816])

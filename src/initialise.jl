@@ -57,7 +57,7 @@ function initialise(;
     real_estate_x = 1
     for (name, (gov, houses)) in municipalities
         #TODO: Do a proper voronoi partition, not this primitive segregation
-        juristiction_x = Int(round(first(griddims) * (houses / total_houses))) # Separation of municipalities in x
+        juristiction_x = Int(round(first(griddims) * (houses / total_houses)) - 1) # Separation of municipalities in x
         # Place Municipality headquarters in the middle of its juristiction
         municipality_id = nextid(model)
         municipality_pos = (

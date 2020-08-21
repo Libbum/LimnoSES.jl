@@ -3,6 +3,8 @@ A limnological social-ecological system hybrid.
 
 Currently under active development and will be prone to major breaking changes.
 
+[Development Documentation](https://libbum.github.io/LimnoSES.jl/dev/)
+
 ## An example model run
 
 ```julia

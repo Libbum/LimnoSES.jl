@@ -3,18 +3,18 @@ export sewage_water, vegetation
 # A couple of different vegetation extractors, depending on the shape of your data
 # Good for `model.lake`
 function vegetation(
-    lake::OrdinaryDiffEq.ODEIntegrator{A,B,C,D,E,<:LakeParameters{Scheffer}},
+    lake::OrdinaryDiffEq.ODEIntegrator{A,B,C,D,E,MartinParameters},
 ) where {A,B,C,D,E}
     bream = lake.sol.u[1, :]
     @. lake.p.K * (lake.p.H₃^2 / (lake.p.H₃^2 + bream^2))
 end
 
 # Good for a singular bream vector
-function vegetation(B::Vector{Float64}, p::LakeParameters{Scheffer})
+function vegetation(B::Vector{Float64}, p::SchefferParameters)
     @. p.K * (p.H₃^2 / (p.H₃^2 + B^2))
 end
 
-function lake_dynamics!(du, u, p::LakeParameters{Scheffer}, t)
+function lake_dynamics!(du, u, p::SchefferParameters, t)
     #TODO: New intervention dynamics not considered for Scheffer model
     B, P = u # g⋅m⁻² bream/pike density
 
@@ -28,7 +28,7 @@ function lake_dynamics!(du, u, p::LakeParameters{Scheffer}, t)
     du[2] = dP = p.ip + p.ce * p.prmax * FR * P * (V / (V + p.H₂)) - p.mp * P - p.cp * P^2
 end
 
-function lake_dynamics!(du, u, p::LakeParameters{Martin}, t)
+function lake_dynamics!(du, u, p::MartinParameters, t)
     B, P, V = u # g⋅m⁻² bream/pike/vegetation density
 
     FR = B^2 / (B^2 + p.H₄^2) # fuctional response of pike

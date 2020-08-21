@@ -35,7 +35,7 @@ end
 
 function agent_step!(municipality::Municipality, model)
     # Update pollution level: nutrient inflow by affectors
-    municipality.affectors = count(a -> !a.oss, households(model))
+    municipality.affectors = count(a -> !a.oss, households(municipality, model))
     # Municipality decides on sewage treatment rule
     if municipality.regulate
         # Check whether update of rules is needed.

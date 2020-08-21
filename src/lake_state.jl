@@ -56,7 +56,7 @@ function sewage_water(m::ABM)
             # TODO: consider adding a household count to municipality.
             b =
                 m.max_sewage_water / (
-                    count(h -> true, households(municipality, m)) -
+                    count(_ -> true, households(municipality, m)) -
                     municipality.tolerance_level_affectors
                 )
             a = -b * municipality.tolerance_level_affectors

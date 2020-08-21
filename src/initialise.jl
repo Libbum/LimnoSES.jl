@@ -46,10 +46,10 @@ function initialise(;
         :init_pike_mortality => lake_parameters.mp,
     )
     model = ABM(
-        Union{Household,Municipality},
+        Union{Individual,Municipality},
         space;
         properties = properties,
-        scheduler = by_type((Household, Municipality), true),
+        scheduler = by_type((Individual, Municipality), true),
         warn = false,
     )
 
@@ -70,12 +70,16 @@ function initialise(;
             name,
             gov.information,
             gov.legislation,
+            gov.budget,
+            gov.budget_σ,
             gov.regulate,
             gov.respond_direct,
             gov.threshold_variable,
             gov.interventions,
+            gov.anticipatory_governance_interest,
+            gov.timing_tension,
             gov.agents_uniform,
-            gov.houseowner_type,
+            gov.action_method,
             gov.willingness_to_upgrade,
             gov.tolerance_level_affectors,
             gov.neighbor_distance,
@@ -96,8 +100,9 @@ function initialise(;
                 )
             end
             compliance = gov.agents_uniform ? rand() : gov.willingness_to_upgrade
+            # TODO: Introduce an Engagement builder for agents.
             house =
-                Household(nextid(model), pos, compliance, false, false, 0, municipality_id)
+                Individual(nextid(model), pos, Dict(:HouseOwner => HouseOwner(compliance, 0.0, false, false, 0, municipality_id)))
             add_agent_pos!(house, model)
         end
         real_estate_x += juristiction_x

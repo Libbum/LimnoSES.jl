@@ -1,5 +1,10 @@
 export initialise
 
+"""
+    initialise()
+
+Returns a populated model initialised and ready to run.
+"""
 function initialise(;
     griddims = (25, 25),
     experiment = Experiment(),
@@ -83,6 +88,12 @@ function initialise(;
     return model
 end
 
+"""
+    type2dict(struct; prefix = "")
+
+Converts a `struct` into a `Dict`. Borrowed from DrWatson, but extended to allow some
+prefix to be attached. This is helpful when merging multiple structs into one `Dict`.
+"""
 function type2dict(dt; prefix = "")
     di = Dict{Symbol,Any}()
     for n in propertynames(dt)

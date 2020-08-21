@@ -4,35 +4,12 @@ function initialise(;
     griddims = (25, 25),
     experiment = Experiment(),
     municipalities = Dict("main" => (Governance(), 100)),
-    lake_state = lake_initial_state(Clear),
-    lake_parameters = LakeParameters(Martin, first(lake_state)),
+    lake_setup = lake_initial_state(Clear, Martin),
 )
     @assert prod(griddims) >=
             sum(last(v) for v in values(municipalities)) + length(municipalities) "Total agents (municipalities + households) cannot be greater than the grid size"
-    lake_state = last(lake_state) # Drop nutrient value from state (it's now in parameters)
-    if experiment.identifier != "none"
-        if experiment.identifier == "transient-hysteresis"
-            nutr, lake_state = lake_initial_state(Clear)
-            lake_parameters.nutrients = nutr
-            experiment.nutrient_series = Constant()
-        elseif experiment.identifier == "transient-hysteresis-down"
-            nutr, lake_state = lake_initial_state(Turbid)
-            lake_parameters.nutrients = nutr
-            experiment.nutrient_series = Constant()
-        elseif experiment.identifier == "biggs-baseline"
-            nutr, lake_state = lake_initial_state(Clear)
-            lake_parameters.nutrients = nutr
-            experiment.nutrient_series = Constant()
-        elseif experiment.identifier == "speed-to-tip"
-            experiment.target_nutrients = 2.5
-        end
-    end
 
-    #TODO: This needs to be nicer. Not sure of the best way to extend _state and _parameters at the same time here.
-    if lake_parameters isa LakeParameters{Scheffer}
-        lake_state = lake_state[1:2]
-    end
-
+    lake_state, lake_parameters = lake_setup
     prob = ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)
 
     space = GridSpace(griddims, moore = true)

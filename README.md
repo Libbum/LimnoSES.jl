@@ -11,7 +11,7 @@ using Plots
 
 model = initialise(
     experiment = Experiment(identifier = "municipalities", nutrient_series = Dynamic()),
-    lake_initialisation = lake_initial_state(X1, Martin),
+    lake_setup = lake_initial_state(X1, Martin),
     municipalities = Dict(
         "main" => (
             Governance(

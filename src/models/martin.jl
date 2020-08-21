@@ -26,11 +26,41 @@ struct X3 <: LakeDefinition end
     tb = 0.0 # day trawling rate
 end
 
-LakeParameters(::Type{Martin}, nutr; kwargs...) = MartinParameters(; nutrients = nutr, kwargs...)
+function lake_dynamics!(du, u, p::MartinParameters, t)
+    B, P, V = u # g⋅m⁻² bream/pike/vegetation density
+
+    FR = B^2 / (B^2 + p.H₄^2) # fuctional response of pike
+    # Wrapped Cauchy distribution, simplifed to a yearly growth cycle between
+    # March & July.
+    # Expanded: γ*(1-ρ^2)/(1+ρ^2-2ρ*cos(2π*(t-μ)/τ))
+    # NOTE: Having some issues with this, it's probably not necessary at all anyway.
+    #plant = p.pv > 0.0 ? -p.pv / (p.pv + 19.4872 * cos(2π / 365.0 * (t - 122.0))) : 0.0
+
+    du[1] =
+        dB =
+            p.ib + p.r * (p.nutrients / (p.nutrients + p.H₁)) * B - p.tb * B - p.cb * B^2 -
+            p.prmax * FR * P
+    du[2] = dP = p.ip + p.ce * p.prmax * FR * P * (V / (V + p.H₂)) - p.mp * P - p.cp * P^2
+    du[3] = dV = p.rv * V + p.pv * V - p.cv * V^2 - p.mv * (V * B^2 / (p.H₃^2 + B^2))
+end
+
+function lake_initial_state(
+    nutrients::Float64,
+    bream::Float64,
+    pike::Float64,
+    vegetation::Float64,
+    ::Type{Martin};
+    kwargs...,
+)
+    ([bream, pike, vegetation], MartinParameters(; nutrients = nutrients, kwargs...))
+end
+
+LakeParameters(::Type{Martin}, nutr; kwargs...) =
+    MartinParameters(; nutrients = nutr, kwargs...)
 
 preset_conditions(::Type{Clear}, ::Type{Martin}) = (0.7, [15.093, 1.947, 74.333])
 preset_conditions(::Type{Turbid}, ::Type{Martin}) = (2.5, [83.085, 0.032, 6.390])
-preset_conditions(::Type{X1}, ::Type{Martin}) = (2.2, [60.036,  0.738, 11.654])
+preset_conditions(::Type{X1}, ::Type{Martin}) = (2.2, [60.036, 0.738, 11.654])
 preset_conditions(::Type{X2}, ::Type{Martin}) = (1.05, [60.036, 0.738, 11.654])
 preset_conditions(::Type{X3}, ::Type{Martin}) = (1.05, [65.984, 0.183, 9.816])
 
@@ -59,3 +89,4 @@ function Base.show(io::IO, ::MIME"text/plain", p::MartinParameters)
         "Vegetation rates. Growth: $(p.rv) day⁻¹, mortality: $(p.mv) day⁻¹, competition: $(p.cv) m²",
     )
 end
+

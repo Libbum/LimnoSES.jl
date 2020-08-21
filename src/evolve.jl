@@ -54,7 +54,7 @@ function model_step!(model)
 
     household_log!(model)
     # Nutrients affect lake dynamics
-    legacy_scenarios!(model)
+#    legacy_scenarios!(model)
     # Update bream stock, pike stock, vegetation and nutrients (daily)
     OrdinaryDiffEq.step!(model.lake, 365.0, true)
     model.lake.p.nutrients += sewage_water(model)

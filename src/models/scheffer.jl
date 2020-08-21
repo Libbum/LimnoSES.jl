@@ -18,6 +18,30 @@ struct Scheffer <: LakeModel end
     K = 100 # % maximum vegetation coverage
 end
 
+function lake_dynamics!(du, u, p::SchefferParameters, t)
+    #TODO: New intervention dynamics not considered for Scheffer model
+    B, P = u # g⋅m⁻² bream/pike density
+
+    V = p.K * (p.H₃^2 / (p.H₃^2 + B^2)) # % of lake covered vegetation
+    FR = B^2 / (B^2 + p.H₄^2) # fuctional response of pike
+
+    du[1] =
+        dB =
+            p.ib + p.r * (p.nutrients / (p.nutrients + p.H₁)) * B - p.cb * B^2 -
+            p.prmax * FR * P
+    du[2] = dP = p.ip + p.ce * p.prmax * FR * P * (V / (V + p.H₂)) - p.mp * P - p.cp * P^2
+end
+
+function lake_initial_state(
+    nutrients::Float64,
+    bream::Float64,
+    pike::Float64,
+    ::Type{Scheffer};
+    kwargs...,
+)
+    ([bream, pike], SchefferParameters(; nutrients = nutrients, kwargs...))
+end
+
 LakeParameters(::Type{Scheffer}, nutr; kwargs...) = SchefferParameters(; nutrients = nutr, kwargs...)
 
 preset_conditions(::Type{Clear}, ::Type{Scheffer}) = (0.7, [20.0, 1.8])

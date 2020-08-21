@@ -4,12 +4,12 @@ function initialise(;
     griddims = (25, 25),
     experiment = Experiment(),
     municipalities = Dict("main" => (Governance(), 100)),
-    lake_intitialisation = lake_initial_state(Clear, Martin),
+    lake_setup = lake_initial_state(Clear, Martin),
 )
     @assert prod(griddims) >=
             sum(last(v) for v in values(municipalities)) + length(municipalities) "Total agents (municipalities + households) cannot be greater than the grid size"
 
-    lake_state, lake_parameters = lake_intitialisation
+    lake_state, lake_parameters = lake_setup
     prob = ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)
 
     space = GridSpace(griddims, moore = true)

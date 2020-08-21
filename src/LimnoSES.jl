@@ -6,8 +6,11 @@ using Parameters, DataFrames
 using OrdinaryDiffEq
 
 include("config.jl")
+
+include("models/scheffer.jl")
+include("models/martin.jl")
 include("lake_state.jl")
-include("legacy.jl")
+
 include("initialise.jl")
 include("evolve.jl")
 include("reporting.jl")

@@ -187,7 +187,6 @@ end
     status::Status = Idle()
 end
 
-
 # Lake dynamics
 abstract type LakeModel end
 abstract type LakeParameters end
@@ -197,21 +196,11 @@ struct Clear <: LakeDefinition end
 struct Turbid <: LakeDefinition end
 
 function lake_initial_state(
-    nutrients::Float64,
-    bream::Float64,
-    pike::Float64,
-    vegetation::Float64,
+    ::Type{L},
     ::Type{M};
     kwargs...,
-) where {M<:LakeModel}
-    ([bream, pike, vegetation], LakeParameters(M, nutrients; kwargs...))
-end
-
-function lake_initial_state(::Type{L}, ::Type{M}; kwargs...) where {L<:LakeDefinition,M<:LakeModel}
+) where {L<:LakeDefinition,M<:LakeModel}
     nutrients, initial_state = preset_conditions(L, M)
     (initial_state, LakeParameters(M, nutrients; kwargs...))
 end
-
-include("models/scheffer.jl")
-include("models/martin.jl")
 

@@ -12,9 +12,6 @@ include("initialise.jl")
 include("evolve.jl")
 include("reporting.jl")
 
-# Modules
-#include("interface.jl")
-
 end # module
 
 

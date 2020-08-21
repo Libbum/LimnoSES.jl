@@ -52,13 +52,9 @@ function sewage_water(m::ABM)
     if m.lake.p.nutrients >= m.init_nutrients
         nutrients_from_sewage = 0.0
         for municipality in municipalities(m)
-            # Cheaper to count than length(collect()) here, but cannot do it implicitly with the union.
-            # TODO: consider adding a household count to municipality.
             b =
-                m.max_sewage_water / (
-                    count(h -> true, households(municipality, m)) -
-                    municipality.tolerance_level_affectors
-                )
+                m.max_sewage_water /
+                (municipality.households - municipality.tolerance_level_affectors)
             a = -b * municipality.tolerance_level_affectors
             nutrients_from_sewage += a + b * municipality.affectors
         end
@@ -72,4 +68,5 @@ function sewage_water(m::ABM)
         0.0
     end
 end
+
 

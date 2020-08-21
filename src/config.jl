@@ -56,6 +56,7 @@ mutable struct Municipality <: AbstractAgent
     willingness_to_upgrade::Float64
     tolerance_level_affectors::Float64
     neighbor_distance::Int
+    households::Int
     affectors::Int
 end
 

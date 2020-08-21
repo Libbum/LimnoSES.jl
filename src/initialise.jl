@@ -79,6 +79,7 @@ function initialise(;
             gov.willingness_to_upgrade,
             gov.tolerance_level_affectors,
             gov.neighbor_distance,
+            houses,
             0,
         )
         add_agent_pos!(municipality, model)

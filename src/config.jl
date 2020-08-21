@@ -73,6 +73,7 @@ mutable struct Municipality <: AbstractAgent
     willingness_to_upgrade::Float64
     tolerance_level_affectors::Float64
     neighbor_distance::Int
+    households::Int
     affectors::Int
 end
 
@@ -257,91 +258,20 @@ end
     status::Status = Idle()
 end
 
-
 # Lake dynamics
 abstract type LakeModel end
-
-struct Scheffer <: LakeModel end
-struct Martin <: LakeModel end
-
-# Nutrient range showing bistability in M0 [1,2.1]; M1 [0.7,1.5]
-@with_kw_noshow mutable struct LakeParameters{M<:LakeModel}
-    @deftype Float64
-    nutrients = 0.7 # current nutrient level
-    ib = 2e-5 # g⋅m⁻²⋅day⁻¹ immigration rate of bream (9e-3 g⋅m⁻²⋅year⁻¹)
-    ip = 2e-5 # g⋅m⁻²⋅day⁻¹ immigration rate of pike (9e-3 g⋅m⁻²⋅year⁻¹)
-    r = 7.5e-3 # day⁻¹ maximum growth rate of bream (2.74 year⁻¹)
-    H₁ = 0.5 # half saturation constant
-    H₂ = 20 # % half saturation constant
-    H₃ = 20 # g⋅m⁻² half saturation constant
-    H₄ = 15 # g⋅m⁻² half saturation constant
-    cb = 7.5e-5 # m⁻²⋅g⁻¹⋅day⁻¹ intraspecific competition constant for bream (0.0274 m⁻²⋅g⁻¹⋅year⁻¹)
-    cp = 2.75e-4 # m⁻²⋅g⁻¹⋅day⁻¹ intraspecific competition constant for pike (0.1 m⁻²⋅g⁻¹⋅year⁻¹)
-    prmax = 5e-2 # day⁻¹ maximum predation rate of pike (18.25 year⁻¹)
-    ce = 0.14 # pike food conversion efficiency to growth
-    mp = 2.25e-3 # day⁻¹ mortality rate of pike (0.82 year⁻¹)
-    K = 100 # % maximum vegetation coverage
-    rv = 7e-3 # day⁻¹ vetegation growth rate
-    cv = 6e-5 # m² intraspecific competition for vetetation
-    mv = 7e-3 # day⁻¹ mortality of vegetation
-    pv = 0.0 # day planting rate
-    tb = 0.0 # day trawling rate
-end
-
-LakeParameters(::Type{Scheffer}, nutr; kwargs...) = LakeParameters{Scheffer}(;
-    nutrients = nutr,
-    H₂ = 10,
-    ce = 0.1,
-    rv = 0,
-    cv = 0,
-    mv = 0,
-    kwargs...,
-)
-LakeParameters(::Type{Martin}, nutr; kwargs...) =
-    LakeParameters{Martin}(; nutrients = nutr, kwargs...)
-
-function Base.show(io::IO, ::MIME"text/plain", p::LakeParameters{M}) where {M}
-    println(io, "Parameters for lake dynamics ($(string(M)) model):")
-    println(io, "Nutrient level: $(p.nutrients)")
-    println(io, "Immigration rate (g⋅m⁻²⋅day⁻¹) for bream: $(p.ib), pike: $(p.ip)")
-    println(
-        io,
-        "Growth rate (day⁻¹) for bream: $(p.r), Predation rate (day⁻¹) of pike: $(p.prmax)",
-    )
-    println(
-        io,
-        "Half sturation constants: H₁ $(p.H₁), H₂ $(p.H₂)%, H₃ $(p.H₃) g⋅m⁻², H₄ $(p.H₄) g⋅m⁻²",
-    )
-    println(
-        io,
-        "Intraspecific competition constant (g⋅m⁻²⋅day⁻¹) for bream: $(p.cb), pike: $(p.cp)",
-    )
-    println(
-        io,
-        "Pike food conversion efficiency to growth: $(p.ce), Mortalitiy rate (day⁻¹): $(p.mp)",
-    )
-    if M <: Martin
-        println(
-            io,
-            "Vegetation rates. Growth: $(p.rv) day⁻¹, mortality: $(p.mv) day⁻¹, competition: $(p.cv) m²",
-        )
-    elseif M <: Scheffer
-        println(io, "Maximum vegetation coverage: $(p.K)%")
-    end
-end
-
+abstract type LakeParameters end
 abstract type LakeDefinition end
 
 struct Clear <: LakeDefinition end
 struct Turbid <: LakeDefinition end
-struct X1 <: LakeDefinition end
-struct X2 <: LakeDefinition end
-struct X3 <: LakeDefinition end
 
-lake_initial_state(nutrients::Float64, bream::Float64, pike::Float64, vegetation::Float64) =
-    (nutrients, [bream, pike, vegetation])
-lake_initial_state(::Type{Clear}) = (0.7, [15.093, 1.947, 74.333])
-lake_initial_state(::Type{Turbid}) = (2.5, [83.085, 0.032, 6.390])
-lake_initial_state(::Type{X1}) = (2.2, [60.036,  0.738, 11.654])
-lake_initial_state(::Type{X2}) = (1.05, [60.036, 0.738, 11.654])
-lake_initial_state(::Type{X3}) = (1.05, [65.984, 0.183, 9.816])
+function lake_initial_state(
+    ::Type{L},
+    ::Type{M};
+    kwargs...,
+) where {L<:LakeDefinition,M<:LakeModel}
+    nutrients, initial_state = preset_conditions(L, M)
+    (initial_state, LakeParameters(M, nutrients; kwargs...))
+end
+

@@ -55,9 +55,7 @@ engage!(engagement::E, individual::Individual, model) where {E<:Engagement} = no
 
 function agent_step!(municipality::Municipality, model)
     # Update municipal budget
-    # TODO: Worth adding this as a municipal property
-    num_households = count(_ -> true, households(municipality, model))
-    tax!(municipality, num_households)
+    tax!(municipality)
     # Update pollution level: nutrient inflow by affectors
     municipality.affectors = count(a -> !a.oss, households(municipality, model))
     # Municipality decides on sewage treatment rule
@@ -78,7 +76,7 @@ function model_step!(model)
 
     household_log!(model)
     # Nutrients affect lake dynamics
-    legacy_scenarios!(model)
+#    legacy_scenarios!(model)
     # Update bream stock, pike stock, vegetation and nutrients (daily)
     OrdinaryDiffEq.step!(model.lake, 365.0, true)
     model.lake.p.nutrients += sewage_water(model)
@@ -100,11 +98,11 @@ function model_step!(model)
     # end
 end
 
-function tax!(municipality::Municipality, num_households::Integer)
+function tax!(municipality::Municipality)
     # Each year we increase the budget by some set income.
     # For the moment, mean income comes from a hardcoded scaled number which
     # assigns 1 million credits per 100 households.
-    municipality.budget += rand(Normal(num_households * 10_000, municipality.budget_σ))
+    municipality.budget += rand(Normal(municipality.households * 10_000, municipality.budget_σ))
 end
 
 function household_log!(model::ABM)

@@ -57,7 +57,7 @@ function model_step!(model)
     OrdinaryDiffEq.step!(model.lake, 365.0, true)
     # Nutrients affect lake dynamics
     nutrient_load!(model, model.nutrient_series)
-    u_modified!(model.lake, true)
+    OrdinaryDiffEq.u_modified!(model.lake, true)
 
     # Interventions which neccesitate lake-wide changes
     aggregate_regulate!(model)
@@ -176,7 +176,7 @@ function aggregate_regulate!(model::ABM)
         end
     end
     model.lake.p.mp = model.init_pike_mortality + new_rate
-    u_modified!(model.lake, true)
+    OrdinaryDiffEq.u_modified!(model.lake, true)
 end
 
 function plant!(model::ABM, municipality::Municipality)

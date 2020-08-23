@@ -15,14 +15,14 @@ function initialise(;
             sum(last(v) for v in values(municipalities)) + length(municipalities) "Total agents (municipalities + households) cannot be greater than the grid size"
 
     lake_state, lake_parameters = lake_setup
-    prob = ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)
+    prob = OrdinaryDiffEq.ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)
 
     space = GridSpace(griddims, moore = true)
     properties = type2dict(experiment)
     merge!(properties, type2dict(Outcomes(); prefix = "outcomes"))
     push!(
         properties,
-        :lake => init(prob, Tsit5()),
+        :lake => OrdinaryDiffEq.init(prob, OrdinaryDiffEq.Tsit5()),
         :year => 0,
         :init_nutrients => lake_parameters.nutrients,
         :init_pike_mortality => lake_parameters.mp,

@@ -3,7 +3,7 @@ module LimnoSES
 using Reexport
 @reexport using Agents, StatsBase
 using Parameters, DataFrames
-using OrdinaryDiffEq
+import OrdinaryDiffEq
 
 include("config.jl")
 

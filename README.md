@@ -52,7 +52,7 @@ model = initialise(
     ),
 )
 
-_, data = run!(model, agent_step!, model_step!, 60; mdata = [sewage_water])
+_, data = run!(model, agent_step!, model_step!, 60; mdata = [nutrients])
 
 discrete = model.lake.sol(0:12:365*60)
 

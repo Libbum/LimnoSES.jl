@@ -1,4 +1,7 @@
-export upgrade_efficiency, vegetation
+export upgrade_efficiency, vegetation, nutrients
+
+# Pre-defined helpers for data collection
+nutrients(model) = model.lake.p.nutrients
 
 # A couple of different vegetation extractors, depending on the shape of your data
 # Good for `model.lake`

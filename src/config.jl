@@ -29,6 +29,7 @@ abstract type Interventions end
 abstract type Status end
 abstract type Threshold end
 abstract type HouseOwner end
+
 abstract type NutrientSeries end
 
 mutable struct Household <: AbstractAgent
@@ -90,11 +91,60 @@ struct Introverted <: HouseOwner end
 struct Social <: HouseOwner end
 struct Enforced <: HouseOwner end
 
+"""
+    Constant()
 
+Nutrient level remains constant at the level of `init_nutrients`.
+"""
 struct Constant <: NutrientSeries end
+
+"""
+    Dynamic()
+
+Nutrient runoff is managed by the municipality by incentivising households to upgrade
+sewage systems that seep P into the lake.
+"""
 struct Dynamic <: NutrientSeries end
-struct TransientUp <: NutrientSeries end
-struct TransientDown <: NutrientSeries end
+
+"""
+    TransientUp(;start_year = 11, post_target_series = Constant())
+
+Synthetic nutrient profile that alters lake dynamics regardless of municipal management.
+
+- `start_year`: year when nutrients begin to increase with a rate of `nutrient_change`.
+- `post_target_series`: behaviour after `target_nutrients` value is reached.
+    Default is `TransientDown(start_year = 0, post_target_series = Constant())`
+
+!!! warning
+
+    Post target series selection must include a final `Constant` phase, otherwise an
+    infinite recursion cascade will occur.
+"""
+@with_kw struct TransientUp <: NutrientSeries
+    start_year::Integer = 11
+    post_target_series::NutrientSeries =
+        TransientDown(start_year = 0, post_target_series = Constant())
+end
+
+"""
+    TransientDown(;start_year = 11, post_target_series = Constant())
+
+Synthetic nutrient profile that alters lake dynamics regardless of municipal management.
+
+- `start_year`: year when nutrients begin to decrease with a rate of `nutrient_change`.
+- `post_target_series`: behaviour after `target_nutrients` value is reached.
+    Default is `TransientUp(start_year = 0, post_target_series = Constant())`
+
+!!! warning
+
+    Post target series selection must include a final `Constant` phase, otherwise an
+    infinite recursion cascade will occur.
+"""
+@with_kw struct TransientDown <: NutrientSeries
+    start_year::Integer = 11
+    post_target_series::NutrientSeries =
+        TransientUp(start_year = 0, post_target_series = Constant())
+end
 
 # Properties of the experiment. For now this is a drop in for GUI values
 # TODO: Some of these may need to be put under Governance

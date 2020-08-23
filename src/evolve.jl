@@ -46,7 +46,11 @@ function agent_step!(municipality::Municipality, model)
             #model.outcomes_year_when_informed = model.year - 1 # Netlogo comment: remember this as t1 for later calculation of implementation efficiency
         end
 
-        water_treatment!(model, municipality)
+        #TODO: This check now essentially supercedes `municipality.regulate`
+        any(
+            i -> i isa WastewaterTreatment,
+            get(municipality.interventions, model.year, Interventions[]),
+        ) && water_treatment!(model, municipality)
     end
 end
 
@@ -139,119 +143,48 @@ end
 #end
 
 function aggregate_regulate!(model::ABM)
-    # Wastewater is internal to the municipality and therefore does not need to update rates.
-    # TODO: clean this up into a loop or macro
-    new_rate = 0.0
-    for planter in Iterators.filter(
-        m -> m.regulate && any(x -> x isa Planting, m.interventions),
-        municipalities(model),
+    # Wastewater is internal to the municipality and therefore does not need to update rates here.
+    schedule = Iterators.flatten(
+        get(m.interventions, model.year, LimnoSES.Interventions[])
+        for m in municipalities(model)
     )
-        rate, status = plant!(model, planter)
-        if status isa Running
-            new_rate += rate
-        end
-    end
-    model.lake.p.pv = new_rate
 
-    new_rate = 0.0
-    for trawler in Iterators.filter(
-        m -> m.regulate && any(x -> x isa Trawling, m.interventions),
-        municipalities(model),
-    )
-        rate, status = trawling!(model, trawler)
-        if status isa Running
-            new_rate += rate
+    planting = Iterators.filter(i -> i isa Planting, schedule)
+    if isempty(planting)
+        model.lake.p.pv = 0.0
+    else
+        for project in planting
+            # model.lake.u[3] is vegetation
+            if model.lake.u[3] < project.threshold
+                model.lake.p.pv += project.rate
+            end
         end
     end
-    model.lake.p.tb = new_rate
 
-    new_rate = 0.0
-    for angler in Iterators.filter(
-        m -> m.regulate && any(x -> x isa Angling, m.interventions),
-        municipalities(model),
-    )
-        rate, status = angling!(model, angler)
-        if status isa Running
-            new_rate += rate
+    trawling = Iterators.filter(i -> i isa Trawling, schedule)
+    if isempty(trawling)
+        model.lake.p.tb = 0.0
+    else
+        for project in trawling
+            # model.lake.u[1] is bream
+            if model.lake.u[1] > project.threshold
+                model.lake.p.tb += project.rate
+            end
         end
     end
-    model.lake.p.mp = model.init_pike_mortality + new_rate
+
+    angling = Iterators.filter(i -> i isa Angling, schedule)
+    if isempty(trawling)
+        model.lake.p.tb = model.init_pike_mortality
+    else
+        new_rate = 0.0
+        for project in angling
+            new_rate += project.rate
+        end
+        model.lake.p.mp = model.init_pike_mortality + new_rate
+    end
+
     OrdinaryDiffEq.u_modified!(model.lake, true)
-end
-
-function plant!(model::ABM, municipality::Municipality)
-    # Currently assumes we can only do one intervention per run and is triggered via a threshold.
-    idx = findfirst(p -> p isa Planting, municipality.interventions)
-    intervention = municipality.interventions[idx]
-    # Only interested in capturing the rate if the intervetion changes it
-    rate = 0.0
-    # u[3] is Vegetation
-    if intervention.status isa Idle && model.lake.u[3] < intervention.threshold
-        intervention.status = Running()
-        # Planting will begin next year.
-        intervention.year_when_planting_begins = model.year + 1
-    end
-
-    if intervention.status isa Running
-        if intervention.years_active > intervention.campaign_length
-            intervention.status = Complete()
-        else
-            bream_diff = isempty(intervention.yearly_stock_bream) ? 0.0 :
-                (model.lake.u[1] / first(intervention.yearly_stock_bream[end]) - 1) * 100
-            veg_diff = isempty(intervention.yearly_stock_vegetation) ? 0.0 :
-                (model.lake.u[3] / first(intervention.yearly_stock_vegetation[end]) - 1) *
-            100
-            push!(intervention.yearly_stock_bream, (model.lake.u[1], bream_diff))
-            push!(intervention.yearly_stock_vegetation, (model.lake.u[3], veg_diff))
-            rate = intervention.rate
-            intervention.years_active += 1
-        end
-    end
-    (rate, intervention.status)
-end
-
-function trawling!(model::ABM, municipality::Municipality)
-    # Currently assumes we can only do one intervention per run and is triggered via a threshold.
-    rate = 0.0
-    idx = findfirst(t -> t isa Trawling, municipality.interventions)
-    intervention = municipality.interventions[idx]
-    # u[1] is Bream
-    if intervention.status isa Idle && model.lake.u[1] > intervention.threshold
-        intervention.status = Running()
-        # Trawling will begin next year.
-        intervention.year_when_trawling_begins = model.year + 1
-    end
-
-    if intervention.status isa Running
-        if intervention.years_active > intervention.campaign_length
-            intervention.status = Complete()
-        else
-            bream_diff = isempty(intervention.yearly_stock_bream) ? 0.0 :
-                (model.lake.u[1] / first(intervention.yearly_stock_bream[end]) - 1) * 100
-            veg_diff = isempty(intervention.yearly_stock_vegetation) ? 0.0 :
-                (model.lake.u[3] / first(intervention.yearly_stock_vegetation[end]) - 1) *
-            100
-            push!(intervention.yearly_stock_bream, (model.lake.u[1], bream_diff))
-            push!(intervention.yearly_stock_vegetation, (model.lake.u[3], veg_diff))
-            rate = intervention.rate
-            intervention.years_active += 1
-        end
-    end
-    (rate, intervention.status)
-end
-
-function angling!(model::ABM, municipality::Municipality)
-    rate = 0.0
-    idx = findfirst(a -> a isa Angling, municipality.interventions)
-    intervention = municipality.interventions[idx]
-    if intervention.status isa Idle
-        # Angling is a long term intervention. We do not turn it off.
-        intervention.status = Running()
-        rate = intervention.rate
-    elseif intervention.status isa Running
-        rate = intervention.rate
-    end
-    (rate, intervention.status)
 end
 
 function water_treatment!(model::ABM, municipality::Municipality)

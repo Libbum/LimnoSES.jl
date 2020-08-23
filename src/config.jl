@@ -51,7 +51,7 @@ mutable struct Municipality <: AbstractAgent
     regulate::Bool
     respond_direct::Bool
     threshold_variable::Threshold
-    interventions::Vector{Interventions} # Set of interventions municipality will act on
+    interventions::Dict{Integer,Vector{Interventions}} # Set of interventions municipality will act on
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner
     willingness_to_upgrade::Float64
@@ -69,7 +69,7 @@ end
     regulate::Bool = true
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
-    interventions::Vector{Interventions} = [WastewaterTreatment()] # Set of interventions municipality will act on
+    interventions::Dict{Integer,Vector{Interventions}} = Dict(0 => [WastewaterTreatment()]) # Set of interventions municipality will act on
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner = Introverted()
@@ -205,36 +205,15 @@ end
 
 struct WastewaterTreatment <: Interventions end
 @with_kw_noshow mutable struct Planting <: Interventions
-    # Welcome to edit
-    campaign_length::Int = 3 # Years of a planting campaign
     threshold::Float64 = 20.0
     rate::Float64 = 1e-3
-    # Internals, do not edit
-    years_active::Int = 0 # Number of years campaign has been active
-    status::Status = Idle() # Idicator of activity
-    year_when_planting_begins::Int = 0
-    #TODO: Separate these out to somewhere else in the monitoring section
-    yearly_stock_bream::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of bream
-    yearly_stock_vegetation::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of vegetation
 end
 @with_kw_noshow mutable struct Trawling <: Interventions
-    # Welcome to edit
-    campaign_length::Int = 3 # Years of a trawling campaign
     threshold::Float64 = 50.0
     rate::Float64 = 1e-3
-    # Internals, do not edit
-    years_active::Int = 0 # Number of years campaign has been active
-    status::Status = Idle() # Idicator of activity
-    year_when_trawling_begins::Int = 0
-    #TODO: Separate these out to somewhere else in the monitoring section
-    yearly_stock_bream::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of bream
-    yearly_stock_vegetation::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of vegetation
 end
 @with_kw_noshow mutable struct Angling <: Interventions
-    # Welcome to edit
     rate::Float64 = 2.25e-4 # 10% of default rate
-    # Internals, do not edit
-    status::Status = Idle()
 end
 
 # Lake dynamics

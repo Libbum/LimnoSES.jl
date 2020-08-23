@@ -103,3 +103,23 @@ function type2dict(dt; prefix = "")
     di
 end
 
+"""
+    vec_merge([dict1, dict2, dict3])
+
+Merges multiple dictionaries where the `supertype` of each dictionary matches.
+Result has the same keys, and a `Vector{<:SuperType}` as the values.
+"""
+function vec_merge(dicts::Array{Dict{A,B} where B,1}) where {A}
+    @assert !isempty(dicts)
+    base_type = supertype(typeof(dicts[1][1]))
+    new_dict = Dict{A,Vector{base_type}}()
+    for dict in dicts
+        for (k, v) in pairs(dict)
+            row = get(new_dict, k, base_type[])
+            push!(row, v)
+            new_dict[k] = row
+        end
+    end
+    new_dict
+end
+

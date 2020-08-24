@@ -49,7 +49,7 @@ function agent_step!(municipality::Municipality, model)
         #TODO: This check now essentially supercedes `municipality.regulate`
         any(
             i -> i isa WastewaterTreatment,
-            get(municipality.interventions, model.year, Interventions[]),
+            get(municipality.interventions, model.year, Intervention[]),
         ) && water_treatment!(model, municipality)
     end
 end
@@ -63,7 +63,7 @@ function model_step!(model)
     nutrient_load!(model, model.nutrient_series)
     OrdinaryDiffEq.u_modified!(model.lake, true)
 
-    # Interventions which neccesitate lake-wide changes
+    # Intervention which neccesitate lake-wide changes
     aggregate_regulate!(model)
     model.year += 1
 
@@ -145,7 +145,7 @@ end
 function aggregate_regulate!(model::ABM)
     # Wastewater is internal to the municipality and therefore does not need to update rates here.
     schedule = Iterators.flatten(
-        get(m.interventions, model.year, LimnoSES.Interventions[])
+        get(m.interventions, model.year, LimnoSES.Intervention[])
         for m in municipalities(model)
     )
 

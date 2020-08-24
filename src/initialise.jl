@@ -1,4 +1,4 @@
-export initialise
+export initialise, plan
 
 """
     initialise()
@@ -87,6 +87,60 @@ function initialise(;
     end
     return model
 end
+
+## Intervention planner
+
+# This method generates a Dict{Integer, Vector{Intervention}} even though the value is
+# always singular. The resultant `Dict` is not expected to be used as-is, but rather
+# merged with other interventions to create a master plan.
+"""
+    plan(Angling) # Assume always on
+    plan(Angling; rate = 2.5e-3) # Always on with custom rate
+    plan(Angling, 7; rate = 3.2e-3) # Only one year (custom rate)
+    plan(Angling, 3:5) # Only years 3 to 5
+    plan(Angling, [(period = 1:4, ),
+                   (year = 5, rate = 7.2e-3),
+                   (period = 7:9, )]) # Active in years 1-5, 7-9 with a custom rate
+                                      # in year 5
+
+Helper that provides complex scheduling for interventions with a simple interface.
+Result will be a `Dict` which can be provided to `municipality.interventions`, although
+this function is almost always used in conjuction with [`intervention_planner`](@ref).
+"""
+plan(::Type{I}; kwargs...) where {I<:Intervention} = plan(I, -1; kwargs...)
+
+function plan(::Type{I}, year::K; kwargs...) where {I<:Intervention, K<:Integer}
+    schedule = Dict{K, Vector{Intervention}}()
+    schedule[year] = [I(;kwargs...)]
+    schedule
+end
+
+function plan(::Type{I}, period::UnitRange{K}; kwargs...) where {I<:Intervention, K<:Integer}
+    schedule = Dict{K, Vector{Intervention}}()
+    for year in period
+        schedule[year] = [I(;kwargs...)]
+    end
+    schedule
+end
+
+function plan(::Type{I}, values::Vector{NamedTuple}) where {I<:Intervention}
+    @assert all(haskey(v, :year) || haskey(v, :period) for v in values) "Each entry must contain a `year` or `period`."
+    schedule = Dict{Integer, Vector{Intervention}}()
+    filter = (year=5, period=1:7) # Dummy tuple which we can use to dump our temporal data
+    for entry in values
+        params = Base.structdiff(entry, filter)
+        if haskey(entry, :year)
+            schedule[entry.year] = [I(;params...)]
+        else
+            for year in entry.period
+                schedule[year] = [I(;params...)]
+            end
+        end
+    end
+    schedule
+end
+
+## Helpers
 
 """
     type2dict(struct; prefix = "")

@@ -25,7 +25,7 @@ export Household,
     Martin,
     Scheffer
 
-abstract type Interventions end
+abstract type Intervention end
 abstract type Status end
 abstract type Threshold end
 abstract type HouseOwner end
@@ -51,7 +51,7 @@ mutable struct Municipality <: AbstractAgent
     regulate::Bool
     respond_direct::Bool
     threshold_variable::Threshold
-    interventions::Dict{Integer,Vector{Interventions}} # Set of interventions municipality will act on
+    interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner
     willingness_to_upgrade::Float64
@@ -69,7 +69,7 @@ end
     regulate::Bool = true
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
-    interventions::Dict{Integer,Vector{Interventions}} = Dict(0 => [WastewaterTreatment()]) # Set of interventions municipality will act on
+    interventions::Dict{Integer,Vector{Intervention}} = Dict(0 => [WastewaterTreatment()]) # Set of interventions municipality will act on
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner = Introverted()
@@ -203,16 +203,16 @@ function Base.show(io::IO, ::MIME"text/plain", p::Outcomes)
 end
 
 
-struct WastewaterTreatment <: Interventions end
-@with_kw_noshow mutable struct Planting <: Interventions
+struct WastewaterTreatment <: Intervention end
+@with_kw_noshow mutable struct Planting <: Intervention
     threshold::Float64 = 20.0
     rate::Float64 = 1e-3
 end
-@with_kw_noshow mutable struct Trawling <: Interventions
+@with_kw_noshow mutable struct Trawling <: Intervention
     threshold::Float64 = 50.0
     rate::Float64 = 1e-3
 end
-@with_kw_noshow mutable struct Angling <: Interventions
+@with_kw_noshow mutable struct Angling <: Intervention
     rate::Float64 = 2.25e-4 # 10% of default rate
 end
 

@@ -69,7 +69,7 @@ end
     regulate::Bool = true
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
-    interventions::Dict{Integer,Vector{Intervention}} = Dict(0 => [WastewaterTreatment()]) # Set of interventions municipality will act on
+    interventions::Dict{Integer,Vector{Intervention}} = Dict(-1 => [WastewaterTreatment()]) # Set of interventions municipality will act on
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner = Introverted()

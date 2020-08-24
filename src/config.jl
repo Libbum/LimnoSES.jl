@@ -39,7 +39,7 @@ export Individual,
     LandOwner,
     FarmerAssociationRepresentative
 
-abstract type Interventions end
+abstract type Intervention end
 abstract type Status end
 abstract type Threshold end
 abstract type ActionMethod end
@@ -63,7 +63,7 @@ mutable struct Municipality <: AbstractAgent
     regulate::Bool
     respond_direct::Bool
     threshold_variable::Threshold
-    interventions::Vector{Interventions} # Set of interventions municipality will act on
+    interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
     # (New) Governance specific
     anticipatory_governance_interest::Float64
     timing_tension::Float64
@@ -87,7 +87,7 @@ end
     regulate::Bool = true
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
-    interventions::Vector{Interventions} = [WastewaterTreatment()] # Set of interventions municipality will act on
+    interventions::Dict{Integer,Vector{Intervention}} = Dict(-1 => [WastewaterTreatment()]) # Set of interventions municipality will act on
     # Related to anticipatorygovernance
     anticipatory_governance_interest::Float64 = 0.0
     timing_tension::Float64 = 0.0
@@ -112,11 +112,60 @@ struct Disengaged <: ActionMethod end
 struct Social <: ActionMethod end
 struct Enforced <: ActionMethod end
 
+"""
+    Constant()
 
+Nutrient level remains constant at the level of `init_nutrients`.
+"""
 struct Constant <: NutrientSeries end
+
+"""
+    Dynamic()
+
+Nutrient runoff is managed by the municipality by incentivising households to upgrade
+sewage systems that seep P into the lake.
+"""
 struct Dynamic <: NutrientSeries end
-struct TransientUp <: NutrientSeries end
-struct TransientDown <: NutrientSeries end
+
+"""
+    TransientUp(;start_year = 11, post_target_series = Constant())
+
+Synthetic nutrient profile that alters lake dynamics regardless of municipal management.
+
+- `start_year`: year when nutrients begin to increase with a rate of `nutrient_change`.
+- `post_target_series`: behaviour after `target_nutrients` value is reached.
+    Default is `TransientDown(start_year = 0, post_target_series = Constant())`
+
+!!! warning
+
+    Post target series selection must include a final `Constant` phase, otherwise an
+    infinite recursion cascade will occur.
+"""
+@with_kw struct TransientUp <: NutrientSeries
+    start_year::Integer = 11
+    post_target_series::NutrientSeries =
+        TransientDown(start_year = 0, post_target_series = Constant())
+end
+
+"""
+    TransientDown(;start_year = 11, post_target_series = Constant())
+
+Synthetic nutrient profile that alters lake dynamics regardless of municipal management.
+
+- `start_year`: year when nutrients begin to decrease with a rate of `nutrient_change`.
+- `post_target_series`: behaviour after `target_nutrients` value is reached.
+    Default is `TransientUp(start_year = 0, post_target_series = Constant())`
+
+!!! warning
+
+    Post target series selection must include a final `Constant` phase, otherwise an
+    infinite recursion cascade will occur.
+"""
+@with_kw struct TransientDown <: NutrientSeries
+    start_year::Integer = 11
+    post_target_series::NutrientSeries =
+        TransientUp(start_year = 0, post_target_series = Constant())
+end
 
 @with_kw mutable struct MunicipalityPolitician <: Engagement
     @deftype Float64
@@ -224,38 +273,17 @@ function Base.show(io::IO, ::MIME"text/plain", p::Outcomes)
 end
 
 
-struct WastewaterTreatment <: Interventions end
-@with_kw_noshow mutable struct Planting <: Interventions
-    # Welcome to edit
-    campaign_length::Int = 3 # Years of a planting campaign
+struct WastewaterTreatment <: Intervention end
+@with_kw_noshow mutable struct Planting <: Intervention
     threshold::Float64 = 20.0
     rate::Float64 = 1e-3
-    # Internals, do not edit
-    years_active::Int = 0 # Number of years campaign has been active
-    status::Status = Idle() # Idicator of activity
-    year_when_planting_begins::Int = 0
-    #TODO: Separate these out to somewhere else in the monitoring section
-    yearly_stock_bream::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of bream
-    yearly_stock_vegetation::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of vegetation
 end
-@with_kw_noshow mutable struct Trawling <: Interventions
-    # Welcome to edit
-    campaign_length::Int = 3 # Years of a trawling campaign
+@with_kw_noshow mutable struct Trawling <: Intervention
     threshold::Float64 = 50.0
     rate::Float64 = 1e-3
-    # Internals, do not edit
-    years_active::Int = 0 # Number of years campaign has been active
-    status::Status = Idle() # Idicator of activity
-    year_when_trawling_begins::Int = 0
-    #TODO: Separate these out to somewhere else in the monitoring section
-    yearly_stock_bream::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of bream
-    yearly_stock_vegetation::Vector{Tuple{Float64,Float64}} = [] # density / % increase/decrease of vegetation
 end
-@with_kw_noshow mutable struct Angling <: Interventions
-    # Welcome to edit
+@with_kw_noshow mutable struct Angling <: Intervention
     rate::Float64 = 2.25e-4 # 10% of default rate
-    # Internals, do not edit
-    status::Status = Idle()
 end
 
 # Lake dynamics

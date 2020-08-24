@@ -4,8 +4,8 @@ using Reexport
 @reexport using Agents, StatsBase
 using Distributions
 using DataFrames
-using OrdinaryDiffEq
 using Parameters
+import OrdinaryDiffEq
 
 include("config.jl")
 

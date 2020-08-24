@@ -18,34 +18,24 @@ model = initialise(
         "main" => (
             Governance(
                 houseowner_type = Introverted(),
-                interventions = Dict(1 => [
-                                 #WastewaterTreatment(),
-                                 #Planting(rate=0.8e-3),
-                                 Angling(),
-                                 #Trawling(rate=0.9e-3)
-                                ])
+                interventions = planner(plan(Angling))
             ),
             100,
         ),
         "little" => (
             Governance(
                 houseowner_type = Enforced(),
-                interventions = Dict(1 => [WastewaterTreatment(),
-                                 Planting(rate=0.5e-3),
-                                # Angling(),
-                                 Trawling(rate=1.3e-3)
-                                ])
+                interventions = planner(plan(WastewaterTreatment),
+                                        plan(Planting, 1:3; rate=0.5e-3),
+                                        plan(Trawling, 1:3; rate=1.3e-3))
             ),
             10,
         ),
         "another" => (
             Governance(
                 houseowner_type = Social(),
-                interventions = Dict(1 => [WastewaterTreatment(),
-                                 Planting(rate=0.9e-3,threshold=40.0),
-                                # Angling(),
-                                # Trawling(rate=1.3e-3)
-                                ])
+                interventions = planner(plan(WastewaterTreatment),
+                                        plan(Planting, 1:8; rate=0.9e-3,threshold=40.0))
             ),
             80,
         ),

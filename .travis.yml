@@ -5,6 +5,9 @@ os:
 julia:
   - 1
 
+notifications:
+  email: false
+
 before_script:
   - git config --global user.name "GitUser"
   - git config --global user.email "git@us.er"
@@ -20,5 +23,3 @@ jobs:
                                                Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
       after_success: skip
-notifications:
-  email: false

@@ -7,6 +7,18 @@ households(municipality::Municipality, model::ABM) = Iterators.filter(
 )
 municipalities(model::ABM) = Iterators.filter(a -> isa(a, Municipality), allagents(model))
 
+"""
+    active_interventions(municipality, year)
+
+Returns all active interventions in the planner. Due to the `year = -1` -> always active
+convention we must merge the current year's plan with the `-1` key (if extant).
+"""
+active_interventions(m::Municipality, year::Int) = vcat(
+    get(m.interventions, -1, Intervention[]),
+    get(m.interventions, year, Intervention[]),
+)
+
+
 function agent_step!(house::Household, model) # yearly
     # Once a year households may update their oss
     if !house.oss && house.information
@@ -49,7 +61,7 @@ function agent_step!(municipality::Municipality, model)
         #TODO: This check now essentially supercedes `municipality.regulate`
         any(
             i -> i isa WastewaterTreatment,
-            get(municipality.interventions, model.year, Intervention[]),
+            active_interventions(municipality, model.year),
         ) && water_treatment!(model, municipality)
     end
 end
@@ -145,8 +157,7 @@ end
 function aggregate_regulate!(model::ABM)
     # Wastewater is internal to the municipality and therefore does not need to update rates here.
     schedule = Iterators.flatten(
-        get(m.interventions, model.year, LimnoSES.Intervention[])
-        for m in municipalities(model)
+        active_interventions(m, model.year) for m in municipalities(model)
     )
 
     planting = Iterators.filter(i -> i isa Planting, schedule)
@@ -174,8 +185,8 @@ function aggregate_regulate!(model::ABM)
     end
 
     angling = Iterators.filter(i -> i isa Angling, schedule)
-    if isempty(trawling)
-        model.lake.p.tb = model.init_pike_mortality
+    if isempty(angling)
+        model.lake.p.mp = model.init_pike_mortality
     else
         new_rate = 0.0
         for project in angling

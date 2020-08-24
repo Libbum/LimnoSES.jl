@@ -161,38 +161,27 @@ function aggregate_regulate!(model::ABM)
     )
 
     planting = Iterators.filter(i -> i isa Planting, schedule)
-    if isempty(planting)
-        model.lake.p.pv = 0.0
-    else
-        for project in planting
-            # model.lake.u[3] is vegetation
-            if model.lake.u[3] < project.threshold
-                model.lake.p.pv += project.rate
-            end
+    model.lake.p.pv = 0.0
+    for project in planting
+        # model.lake.u[3] is vegetation
+        if model.lake.u[3] < project.threshold
+            model.lake.p.pv += project.rate
         end
     end
 
     trawling = Iterators.filter(i -> i isa Trawling, schedule)
-    if isempty(trawling)
-        model.lake.p.tb = 0.0
-    else
-        for project in trawling
-            # model.lake.u[1] is bream
-            if model.lake.u[1] > project.threshold
-                model.lake.p.tb += project.rate
-            end
+    model.lake.p.tb = 0.0
+    for project in trawling
+        # model.lake.u[1] is bream
+        if model.lake.u[1] > project.threshold
+            model.lake.p.tb += project.rate
         end
     end
 
     angling = Iterators.filter(i -> i isa Angling, schedule)
-    if isempty(angling)
-        model.lake.p.mp = model.init_pike_mortality
-    else
-        new_rate = 0.0
-        for project in angling
-            new_rate += project.rate
-        end
-        model.lake.p.mp = model.init_pike_mortality + new_rate
+    model.lake.p.mp = model.init_pike_mortality
+    for project in angling
+        model.lake.p.mp += project.rate
     end
 
     OrdinaryDiffEq.u_modified!(model.lake, true)

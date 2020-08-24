@@ -26,8 +26,8 @@ model = initialise(
             Governance(
                 houseowner_type = Enforced(),
                 interventions = planner(plan(WastewaterTreatment),
-                                        plan(Planting, 1:3; rate=0.5e-3),
-                                        plan(Trawling, 1:3; rate=1.3e-3))
+                                        plan(Planting, 2; rate=1.0e-3),
+                                        plan(Trawling, 0:3; rate=1.3e-3))
             ),
             10,
         ),
@@ -35,13 +35,12 @@ model = initialise(
             Governance(
                 houseowner_type = Social(),
                 interventions = planner(plan(WastewaterTreatment),
-                                        plan(Planting, 1:8; rate=0.9e-3,threshold=40.0))
+                                        plan(Planting, 0:8; rate=0.9e-3,threshold=40.0))
             ),
             80,
         ),
     ),
 )
-
 _, data = run!(model, agent_step!, model_step!, 60; mdata = [nutrients])
 
 discrete = model.lake.sol(0:12:365*60)

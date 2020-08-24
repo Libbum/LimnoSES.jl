@@ -15,6 +15,10 @@ before_script:
 jobs:
   fast_finish: true
   include:
+    - stage: test
+      julia: 1
+      os: linux
+      after_success: skip
     - stage: "Documentation"
       julia: 1
       os: linux

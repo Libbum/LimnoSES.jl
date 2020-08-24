@@ -1,4 +1,4 @@
-export initialise, plan
+export initialise, plan, planner
 
 """
     initialise()
@@ -15,7 +15,8 @@ function initialise(;
             sum(last(v) for v in values(municipalities)) + length(municipalities) "Total agents (municipalities + households) cannot be greater than the grid size"
 
     lake_state, lake_parameters = lake_setup
-    prob = OrdinaryDiffEq.ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)
+    prob =
+        OrdinaryDiffEq.ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)
 
     space = GridSpace(griddims, moore = true)
     properties = type2dict(experiment)
@@ -90,6 +91,19 @@ end
 
 ## Intervention planner
 
+"""
+    planner(plan(Angling))
+    planner(plan(Planting; rate=5e-3),
+            plan(Trawling, 1:3))
+
+Provides a complete schedule of interventions for a [Municipality](@ref). Must
+be used in conjunction with [`plan`](@ref).
+"""
+function planner(plan::Dict{Int,Vector{Intervention}}...)
+    @assert length(unique(typeof(first(first(values(p)))) for p in plan)) == length(plan) "Cannot parse more than one plan per intervention."
+    merge(vcat, plan...)
+end
+
 # This method generates a Dict{Integer, Vector{Intervention}} even though the value is
 # always singular. The resultant `Dict` is not expected to be used as-is, but rather
 # merged with other interventions to create a master plan.
@@ -104,36 +118,41 @@ end
                                       # in year 5
 
 Helper that provides complex scheduling for interventions with a simple interface.
-Result will be a `Dict` which can be provided to `municipality.interventions`, although
-this function is almost always used in conjuction with [`intervention_planner`](@ref).
+
+The return type is `Dict{Int, Vector{Intervention}}`, were the key is each year
+the collection of interventions will be active. As a convention, year `-1` denotes an
+'always active' intervention.
+
+The result can be provided to `municipality.interventions`, although
+this function should almost always used in conjuction with [`planner`](@ref).
 """
 plan(::Type{I}; kwargs...) where {I<:Intervention} = plan(I, -1; kwargs...)
 
-function plan(::Type{I}, year::K; kwargs...) where {I<:Intervention, K<:Integer}
-    schedule = Dict{K, Vector{Intervention}}()
-    schedule[year] = [I(;kwargs...)]
+function plan(::Type{I}, year::Int; kwargs...) where {I<:Intervention}
+    schedule = Dict{Int,Vector{Intervention}}()
+    schedule[year] = [I(; kwargs...)]
     schedule
 end
 
-function plan(::Type{I}, period::UnitRange{K}; kwargs...) where {I<:Intervention, K<:Integer}
-    schedule = Dict{K, Vector{Intervention}}()
+function plan(::Type{I}, period::UnitRange{Int}; kwargs...) where {I<:Intervention}
+    schedule = Dict{Int,Vector{Intervention}}()
     for year in period
-        schedule[year] = [I(;kwargs...)]
+        schedule[year] = [I(; kwargs...)]
     end
     schedule
 end
 
-function plan(::Type{I}, values::Vector{NamedTuple}) where {I<:Intervention}
+function plan(::Type{I}, values::Vector{<:NamedTuple}) where {I<:Intervention}
     @assert all(haskey(v, :year) || haskey(v, :period) for v in values) "Each entry must contain a `year` or `period`."
-    schedule = Dict{Integer, Vector{Intervention}}()
-    filter = (year=5, period=1:7) # Dummy tuple which we can use to dump our temporal data
+    schedule = Dict{Int,Vector{Intervention}}()
+    filter = (year = 5, period = 1:7) # Dummy tuple which we can use to dump our temporal data
     for entry in values
         params = Base.structdiff(entry, filter)
         if haskey(entry, :year)
-            schedule[entry.year] = [I(;params...)]
+            schedule[entry.year] = [I(; params...)]
         else
             for year in entry.period
-                schedule[year] = [I(;params...)]
+                schedule[year] = [I(; params...)]
             end
         end
     end
@@ -155,25 +174,5 @@ function type2dict(dt; prefix = "")
         di[id] = getproperty(dt, n)
     end
     di
-end
-
-"""
-    vec_merge([dict1, dict2, dict3])
-
-Merges multiple dictionaries where the `supertype` of each dictionary matches.
-Result has the same keys, and a `Vector{<:SuperType}` as the values.
-"""
-function vec_merge(dicts::Array{Dict{A,B} where B,1}) where {A}
-    @assert !isempty(dicts)
-    base_type = supertype(typeof(dicts[1][1]))
-    new_dict = Dict{A,Vector{base_type}}()
-    for dict in dicts
-        for (k, v) in pairs(dict)
-            row = get(new_dict, k, base_type[])
-            push!(row, v)
-            new_dict[k] = row
-        end
-    end
-    new_dict
 end
 

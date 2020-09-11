@@ -21,9 +21,7 @@ export Household,
     X2,
     X3,
     Experiment,
-    LakeParameters,
-    Martin,
-    Scheffer
+    LakeParameters
 
 abstract type Intervention end
 abstract type Status end
@@ -223,6 +221,9 @@ abstract type LakeDefinition end
 
 struct Clear <: LakeDefinition end
 struct Turbid <: LakeDefinition end
+struct X1 <: LakeDefinition end
+struct X2 <: LakeDefinition end
+struct X3 <: LakeDefinition end
 
 function lake_initial_state(
     ::Type{L},

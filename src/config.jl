@@ -35,6 +35,7 @@ mutable struct Household <: AbstractAgent
     pos::Tuple{Int,Int} # The x, y location of the agent on a 2D grid
     compliance::Float64 # From willingness to upgrade
     oss::Bool # Is the sewage system upgraded or not?
+    goesToWC::Bool # Does this person go to WC meetings?
     information::Bool # Has this agent been told about the upgrade?
     implementation_lag::Int # How long does it take the agent to choose to upgrade?
     municipality::Int # ID of the municipality this household belongs to
@@ -233,4 +234,3 @@ function lake_initial_state(
     nutrients, initial_state = preset_conditions(L, M)
     (initial_state, LakeParameters(M, nutrients; kwargs...))
 end
-

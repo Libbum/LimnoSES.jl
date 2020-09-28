@@ -81,7 +81,7 @@ function initialise(;
             end
             compliance = gov.agents_uniform ? rand() : gov.willingness_to_upgrade
             house =
-                Household(nextid(model), pos, compliance, false, false, 0, municipality_id)
+                Household(nextid(model), pos, compliance, false, false, false, 0, municipality_id)
             add_agent_pos!(house, model)
         end
         real_estate_x += juristiction_x
@@ -175,4 +175,3 @@ function type2dict(dt; prefix = "")
     end
     di
 end
-

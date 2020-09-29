@@ -202,7 +202,9 @@ end
 struct OrganisationMember <: Engagement end
 struct IndustryRepresentative <: Engagement end
 struct ScientificExpert <: Engagement end
-@with_kw mutable struct FishingAssociationRepresentative <:Engagement interact_WC::Bool = false end
+@with_kw mutable struct FishingAssociationRepresentative <: Engagement
+     interact_WC::Bool = false
+end
 struct ForestryAssociationRepresentative <: Engagement end
 @with_kw mutable struct LandOwner <: Engagement
     @deftype Float64

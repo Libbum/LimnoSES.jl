@@ -18,7 +18,7 @@ function initialise(;
     prob =
         OrdinaryDiffEq.ODEProblem(lake_dynamics!, lake_state, (0.0, Inf), lake_parameters)
 
-    space = GridSpace(griddims, moore = true)
+    space = GridSpace(griddims, periodic = false)
     properties = type2dict(experiment)
     merge!(properties, type2dict(Outcomes(); prefix = "outcomes"))
     push!(
@@ -72,7 +72,7 @@ function initialise(;
                 rand(real_estate_x:min(real_estate_x + juristiction_x, first(griddims))),
                 rand(1:last(griddims)),
             )
-            while !isempty(Agents.coord2vertex(pos, model), model) ||
+            while !isempty(pos, model) ||
                   pos == municipality_pos
                 pos = (
                     rand(real_estate_x:(real_estate_x + juristiction_x)),

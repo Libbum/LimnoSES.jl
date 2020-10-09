@@ -28,7 +28,7 @@ function agent_step!(house::Household, model) # yearly
             municipality = model[house.municipality]
             if municipality.houseowner_type isa Social
                 # Tell neighbours to increase their compliance
-                neighbors = space_neighbors(house, model, municipality.neighbor_distance)
+                neighbors = nearby_ids(house, model, municipality.neighbor_distance)
                 # We must filter out bordering municipalities first
                 for nid in Iterators.filter(
                     n ->

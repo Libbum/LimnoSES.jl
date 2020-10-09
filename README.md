@@ -17,14 +17,14 @@ model = initialise(
     municipalities = Dict(
         "main" => (
             Governance(
-                houseowner_type = Introverted(),
+                action_method = Disengaged(),
                 interventions = planner(plan(Angling))
             ),
             100,
         ),
         "little" => (
             Governance(
-                houseowner_type = Enforced(),
+                action_method = Enforced(),
                 interventions = planner(plan(WastewaterTreatment),
                                         plan(Planting, 2; rate=1.0e-3),
                                         plan(Trawling, 0:3; rate=1.3e-3))
@@ -33,7 +33,7 @@ model = initialise(
         ),
         "another" => (
             Governance(
-                houseowner_type = Social(),
+                action_method = Social(),
                 interventions = planner(plan(WastewaterTreatment),
                                         plan(Planting, 0:8; rate=0.9e-3,threshold=40.0))
             ),

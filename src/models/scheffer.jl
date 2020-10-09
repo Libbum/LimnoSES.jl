@@ -1,3 +1,5 @@
+export Scheffer
+
 struct Scheffer <: LakeModel end
 
 @with_kw_noshow mutable struct SchefferParameters <: LakeParameters

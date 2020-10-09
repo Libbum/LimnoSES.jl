@@ -43,7 +43,7 @@ function engage!(house::HouseOwner, individual::Individual, model)
             if municipality.action_method isa Social
                 # Tell neighbours to increase their compliance
                 neighbors =
-                    space_neighbors(individual, model, municipality.neighbor_distance)
+                    nearby_ids(individual, model, municipality.neighbor_distance)
                 # We must filter out bordering municipalities first
                 for nid in Iterators.filter(
                     n ->

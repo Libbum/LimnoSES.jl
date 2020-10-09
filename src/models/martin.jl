@@ -1,8 +1,6 @@
-struct Martin <: LakeModel end
+export Martin
 
-struct X1 <: LakeDefinition end
-struct X2 <: LakeDefinition end
-struct X3 <: LakeDefinition end
+struct Martin <: LakeModel end
 
 @with_kw_noshow mutable struct MartinParameters <: LakeParameters
     @deftype Float64

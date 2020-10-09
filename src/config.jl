@@ -293,6 +293,9 @@ abstract type LakeDefinition end
 
 struct Clear <: LakeDefinition end
 struct Turbid <: LakeDefinition end
+struct X1 <: LakeDefinition end
+struct X2 <: LakeDefinition end
+struct X3 <: LakeDefinition end
 
 function lake_initial_state(
     ::Type{L},

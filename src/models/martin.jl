@@ -58,9 +58,9 @@ LakeParameters(::Type{Martin}, nutr; kwargs...) =
 
 preset_conditions(::Type{Clear}, ::Type{Martin}) = (0.7, [20.5172, 1.7865, 56.8443])
 preset_conditions(::Type{Turbid}, ::Type{Martin}) = (2.5, [83.0128, 0.0414705, 6.40048])
-preset_conditions(::Type{X1}, ::Type{Martin}) = (2.2, [60.036, 0.738, 11.654]) #TODO
-preset_conditions(::Type{X2}, ::Type{Martin}) = (1.05, [60.036, 0.738, 11.654]) #TODO
-preset_conditions(::Type{X3}, ::Type{Martin}) = (1.05, [65.984, 0.183, 9.816]) #TODO
+preset_conditions(::Type{X1}, ::Type{Martin}) = (2.2, [36.730, 2.87725, 26.6798]) #deep unstable
+preset_conditions(::Type{X2}, ::Type{Martin}) = (1.05, [59.0606, 0.819124, 12.0023]) #unstable
+preset_conditions(::Type{X3}, ::Type{Martin}) = (1.05, [64.0559, 0.374008, 10.3631]) #stable
 
 function Base.show(io::IO, ::MIME"text/plain", p::MartinParameters)
     println(io, "Parameters for lake dynamics (Martin) model):")

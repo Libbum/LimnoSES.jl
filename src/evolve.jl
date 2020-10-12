@@ -1,20 +1,55 @@
 export agent_step!, model_step!, households, municipalities
 
 households(model::ABM) = (
-    i.attributes[:HouseOwner] for i in Iterators.filter(
+    i.attributes[:HouseOwner] for
+    i in Iterators.filter(
         a -> isa(a, Individual) && haskey(a.attributes, :HouseOwner),
         allagents(model),
     )
 )
 households(municipality::Municipality, model::ABM) = (
-    i.attributes[:HouseOwner] for i in Iterators.filter(
+    i.attributes[:HouseOwner] for
+    i in Iterators.filter(
         a ->
-            isa(a, Individual) && haskey(a.attributes, :HouseOwner) &&
+            isa(a, Individual) &&
+            haskey(a.attributes, :HouseOwner) &&
             a.attributes[:HouseOwner].municipality == municipality.id,
         allagents(model),
     )
 )
 municipalities(model::ABM) = Iterators.filter(a -> isa(a, Municipality), allagents(model))
+
+"""
+    staff(municipality, model)
+
+List of all staff working for a municipality
+"""
+staff(municipality::Municipality, model::ABM) = Iterators.filter(
+    a ->
+        isa(a, Individual) && any(
+            key ->
+                haskey(a.attributes, key) &&
+                a.attributes[key].municipality == municipality.id,
+            [:MunicipalityPolitician, :MunicipalityStaff, :MunicipalityWaterCouncilLiason],
+        ),
+    allagents(model),
+)
+
+"""
+    representatives(municipality, model)
+
+List of all staff representing a municipality in an official capacity
+"""
+representatives(municipality::Municipality, model::ABM) = Iterators.filter(
+    a ->
+        isa(a, Individual) && any(
+            key ->
+                haskey(a.attributes, key) &&
+                a.attributes[key].municipality == municipality.id,
+            [:MunicipalityPolitician, :MunicipalityWaterCouncilLiason],
+        ),
+    allagents(model),
+)
 
 """
     active_interventions(municipality, year)
@@ -33,6 +68,21 @@ function agent_step!(individual::Individual, model)
     end
 end
 
+# #20, point 3
+function engage!(politician::MunicipalityPolitician, individual::Individual, model)
+    # Elected official, high level. Essentially sets the tone of the governance system,
+    # but does not necessarily interact with the WC or lake related matters.
+    municipality = model[politician.municipality]
+    if politician.commitment > 0.6 # TODO: arbitrary number
+        municipality.anticipatory_governance.interest *= 1.1 #TODO: arbitrary number
+    end
+    if politician.time > 0.85 # TODO: arbitrary number
+        municipality.anticipatory_governance.interest *= 1.05 #TODO: arbitrary number
+    end
+    municipality.anticipatory_governance.interest =
+        max(municipality.anticipatory_governance.interest, 1.0)
+end
+
 function engage!(house::HouseOwner, individual::Individual, model)
     # Once a year households may update their oss
     if !house.oss && house.information
@@ -42,8 +92,7 @@ function engage!(house::HouseOwner, individual::Individual, model)
             municipality = model[house.municipality]
             if municipality.action_method isa Social
                 # Tell neighbours to increase their compliance
-                neighbors =
-                    nearby_ids(individual, model, municipality.neighbor_distance)
+                neighbors = nearby_ids(individual, model, municipality.neighbor_distance)
                 # We must filter out bordering municipalities first
                 for nid in Iterators.filter(
                     n ->
@@ -66,7 +115,12 @@ engage!(engagement::E, individual::Individual, model) where {E<:Engagement} = no
 
 function agent_step!(municipality::Municipality, model)
     # Update municipal budget
-    tax!(municipality)
+    funding!(municipality)
+    # Decide what to do with budget
+    if municipality.budget > 300_000 # #20, point 2
+        municipality.anticipatory_governance.interest *= 1.2 #TODO: Up to some maximum
+        # If there is no WCLiason, create one.
+    end
     # Update pollution level: nutrient inflow by affectors
     municipality.affectors = count(a -> !a.oss, households(municipality, model))
     # Municipality decides on sewage treatment rule
@@ -79,7 +133,7 @@ function agent_step!(municipality::Municipality, model)
             #model.outcomes_year_when_informed = model.year - 1 # Netlogo comment: remember this as t1 for later calculation of implementation efficiency
         end
 
-        #TODO: This check now essentially supercedes `municipality.regulate`
+        #TODO: This check now essentially supersedes `municipality.regulate`
         any(
             i -> i isa WastewaterTreatment,
             active_interventions(municipality, model.year),
@@ -96,7 +150,31 @@ function model_step!(model)
     nutrient_load!(model, model.nutrient_series)
     OrdinaryDiffEq.u_modified!(model.lake, true)
 
-    # Intervention which neccesitate lake-wide changes
+    # Social & governance update (WC Perspective)
+    # Initiate discussions with Municipalities #20, point 5
+    for municipality in municipalities(model)
+        municipality.politician == 0 && continue
+        pol = model[municipality.politician]
+        if 3 * rand() < pol.commitment + pol.time + pol.capacity &&
+           municipality.anticipatory_governance.timing_tension < 0.2
+            # get representatives & randomly sample their attendance
+            reps = collect(representatives(model))
+            attending = rand(Bool, length(reps))
+            while sum(attending) < 1
+                attending = rand(Bool, length(reps))
+            end
+            #TODO: `reps[attending]` "Participate in discussion" What does this 'do'?
+            # #20, point 6
+            #TODO: `reps[attending]` "May respond positively" What does this 'mean'? What changes?
+            # #20, point 6
+            # #20, point 7
+            #TODO: WC may share monitoring data. Why would they withhold this information?
+            # What does this do? Does it update the process of the municipality when the reps return home?
+            # Does the Municipality continue to use the old implementation if monitoring data is not shared?
+        end
+    end
+
+    # Intervention which necessitate lake-wide changes
     aggregate_regulate!(model)
     model.year += 1
 
@@ -104,7 +182,7 @@ function model_step!(model)
     monitor!(model)
 
     # remember the year when the desired state is restored
-    # look only for this year after degredadion and regulation of system has started
+    # look only for this year after degradation and regulation of system has started
     #TODO: This makes no sense in the context of multiple municipalities, this should be a water council property
     # if any(m->m.legislation, municipalities(model)) &&
     #     model.outcomes_year_when_desired_pike_is_back == 0
@@ -112,11 +190,12 @@ function model_step!(model)
     # end
 end
 
-function tax!(municipality::Municipality)
+function funding!(municipality::Municipality)
     # Each year we increase the budget by some set income.
     # For the moment, mean income comes from a hardcoded scaled number which
     # assigns 1 million credits per 100 households.
-    municipality.budget += rand(Normal(municipality.households * 10_000, municipality.budget_σ))
+    municipality.budget +=
+        rand(Normal(municipality.households * 10_000, municipality.budget_σ))
 end
 
 function household_log!(model::ABM)

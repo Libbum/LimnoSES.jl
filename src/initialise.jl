@@ -59,14 +59,16 @@ function initialise(;
             gov.respond_direct,
             gov.threshold_variable,
             gov.interventions,
-            gov.anticipatory_governance_interest,
-            gov.timing_tension,
             gov.agents_uniform,
             gov.action_method,
             gov.willingness_to_upgrade,
             gov.tolerance_level_affectors,
             gov.neighbor_distance,
             houses,
+            0,
+            gov.anticipatory_governance,
+            gov.administrative_challenges,
+            0,
             0,
         )
         add_agent_pos!(municipality, model)

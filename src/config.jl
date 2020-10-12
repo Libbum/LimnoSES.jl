@@ -26,6 +26,7 @@ export Individual,
     Scheffer,
     MunicipalityPolitician,
     MunicipalityWaterCouncilLiason,
+    MunicipalityStaff,
     HouseOwner,
     WaterCouncilVolunteer,
     WaterCouncilStaff,
@@ -52,6 +53,11 @@ mutable struct Individual <: AbstractAgent
     attributes::Dict{Symbol,Engagement}
 end
 
+mutable struct AnticipatoryGovernance
+    interest::Float64
+    timing_tension::Float64
+end
+
 mutable struct Municipality <: AbstractAgent
     id::Int # The identifier number of the agent
     pos::Tuple{Int,Int} # The x, y location of the agent on a 2D grid
@@ -64,9 +70,6 @@ mutable struct Municipality <: AbstractAgent
     respond_direct::Bool
     threshold_variable::Threshold
     interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
-    # (New) Governance specific
-    anticipatory_governance_interest::Float64
-    timing_tension::Float64
     # Household specific properties
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     action_method::ActionMethod
@@ -75,6 +78,11 @@ mutable struct Municipality <: AbstractAgent
     neighbor_distance::Int
     households::Int
     affectors::Int
+    # Governance related
+    anticipatory_governance::AnticipatoryGovernance
+    administrative_challenges::Float64
+    politician::Int
+    wc_liasion::Int
 end
 
 @with_kw mutable struct Governance
@@ -88,9 +96,9 @@ end
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
     interventions::Dict{Integer,Vector{Intervention}} = Dict(-1 => [WastewaterTreatment()]) # Set of interventions municipality will act on
-    # Related to anticipatorygovernance
-    anticipatory_governance_interest::Float64 = 0.0
-    timing_tension::Float64 = 0.0
+    # Related to anticipatory governance
+    anticipatory_governance::AnticipatoryGovernance = AnticipatoryGovernance(0.5, 0.9)
+    administrative_challenges::Float64 = 0.0# #20, point 4
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     action_method::ActionMethod = Disengaged()
@@ -169,15 +177,21 @@ end
 
 @with_kw mutable struct MunicipalityPolitician <: Engagement
     @deftype Float64
+    municipality::Int = 0 # ID of the municipality this household belongs to
     capacity = 0.0
     time = 0.0
     commitment = 0.0
 end
 @with_kw mutable struct MunicipalityWaterCouncilLiason <: Engagement
     @deftype Float64
+    municipality::Int = 0 # ID of the municipality this household belongs to
     capacity = 0.0
     time = 0.0
     commitment = 0.0
+end
+@with_kw mutable struct MunicipalityStaff <: Engagement
+    @deftype Float64
+    municipality::Int = 0 # ID of the municipality this household belongs to
 end
 @with_kw mutable struct HouseOwner <: Engagement
     # Fine to edit
@@ -229,6 +243,7 @@ end
     recycling_rate::Float64 = 0.1
     max_sewage_water::Float64 = 0.1
     water_council_central_node::Bool = false
+    anticipatory_governance::AnticipatoryGovernance = AnticipatoryGovernance(0.5, 0.9)
 end
 
 @with_kw_noshow mutable struct Outcomes

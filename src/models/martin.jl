@@ -9,13 +9,13 @@ struct Martin <: LakeModel end
     ip = 2e-5 # g⋅m⁻²⋅day⁻¹ immigration rate of pike (9e-3 g⋅m⁻²⋅year⁻¹)
     r = 7.5e-3 # day⁻¹ maximum growth rate of bream (2.74 year⁻¹)
     H₁ = 0.5 # half saturation constant
-    H₂ = 20 # % half saturation constant
+    H₂ = 11 # % half saturation constant
     H₃ = 20 # g⋅m⁻² half saturation constant
     H₄ = 15 # g⋅m⁻² half saturation constant
     cb = 7.5e-5 # m⁻²⋅g⁻¹⋅day⁻¹ intraspecific competition constant for bream (0.0274 m⁻²⋅g⁻¹⋅year⁻¹)
     cp = 2.75e-4 # m⁻²⋅g⁻¹⋅day⁻¹ intraspecific competition constant for pike (0.1 m⁻²⋅g⁻¹⋅year⁻¹)
     prmax = 5e-2 # day⁻¹ maximum predation rate of pike (18.25 year⁻¹)
-    ce = 0.14 # pike food conversion efficiency to growth
+    ce = 0.1 # pike food conversion efficiency to growth
     mp = 2.25e-3 # day⁻¹ mortality rate of pike (0.82 year⁻¹)
     rv = 7e-3 # day⁻¹ vetegation growth rate
     cv = 6e-5 # m² intraspecific competition for vetetation
@@ -56,11 +56,11 @@ end
 LakeParameters(::Type{Martin}, nutr; kwargs...) =
     MartinParameters(; nutrients = nutr, kwargs...)
 
-preset_conditions(::Type{Clear}, ::Type{Martin}) = (0.7, [15.093, 1.947, 74.333])
-preset_conditions(::Type{Turbid}, ::Type{Martin}) = (2.5, [83.085, 0.032, 6.390])
-preset_conditions(::Type{X1}, ::Type{Martin}) = (2.2, [60.036, 0.738, 11.654])
-preset_conditions(::Type{X2}, ::Type{Martin}) = (1.05, [60.036, 0.738, 11.654])
-preset_conditions(::Type{X3}, ::Type{Martin}) = (1.05, [65.984, 0.183, 9.816])
+preset_conditions(::Type{Clear}, ::Type{Martin}) = (0.7, [20.5172, 1.7865, 56.8443])
+preset_conditions(::Type{Turbid}, ::Type{Martin}) = (2.5, [83.0128, 0.0414705, 6.40048])
+preset_conditions(::Type{X1}, ::Type{Martin}) = (2.2, [36.730, 2.87725, 26.6798]) #deep unstable
+preset_conditions(::Type{X2}, ::Type{Martin}) = (1.05, [59.0606, 0.819124, 12.0023]) #unstable
+preset_conditions(::Type{X3}, ::Type{Martin}) = (1.05, [64.0559, 0.374008, 10.3631]) #stable
 
 function Base.show(io::IO, ::MIME"text/plain", p::MartinParameters)
     println(io, "Parameters for lake dynamics (Martin) model):")

@@ -178,6 +178,7 @@ end
     capacity = 0.0
     time = 0.0
     commitment = 0.0
+    interact_FishingAssociationRepresentative::Bool=false
 end
 @with_kw mutable struct HouseOwner <: Engagement
     # Fine to edit
@@ -305,4 +306,3 @@ function lake_initial_state(
     nutrients, initial_state = preset_conditions(L, M)
     (initial_state, LakeParameters(M, nutrients; kwargs...))
 end
-

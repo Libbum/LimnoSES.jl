@@ -1,5 +1,5 @@
-export Household,
-    Introverted,
+export Individual,
+    Disengaged,
     Social,
     Enforced,
     Pike,
@@ -21,23 +21,35 @@ export Household,
     X2,
     X3,
     Experiment,
-    LakeParameters
+    LakeParameters,
+    Martin,
+    Scheffer,
+    MunicipalityPolitician,
+    MunicipalityWaterCouncilLiason,
+    HouseOwner,
+    WaterCouncilVolunteer,
+    WaterCouncilStaff,
+    Angler,
+    Tourist,
+    OrganisationMember,
+    IndustryRepresentative,
+    ScientificExpert,
+    FishingAssociationRepresentative,
+    ForestryAssociationRepresentative,
+    LandOwner,
+    FarmerAssociationRepresentative
 
 abstract type Intervention end
 abstract type Status end
 abstract type Threshold end
-abstract type HouseOwner end
-
+abstract type ActionMethod end
 abstract type NutrientSeries end
+abstract type Engagement end
 
-mutable struct Household <: AbstractAgent
+mutable struct Individual <: AbstractAgent
     id::Int # The identifier number of the agent
     pos::Tuple{Int,Int} # The x, y location of the agent on a 2D grid
-    compliance::Float64 # From willingness to upgrade
-    oss::Bool # Is the sewage system upgraded or not?
-    information::Bool # Has this agent been told about the upgrade?
-    implementation_lag::Int # How long does it take the agent to choose to upgrade?
-    municipality::Int # ID of the municipality this household belongs to
+    attributes::Dict{Symbol,Engagement}
 end
 
 mutable struct Municipality <: AbstractAgent
@@ -46,12 +58,18 @@ mutable struct Municipality <: AbstractAgent
     name::String
     information::Bool # information on state of the lake
     legislation::Bool # legislation power to enforce new rules
+    budget::Float64
+    budget_σ::Float64
     regulate::Bool
     respond_direct::Bool
     threshold_variable::Threshold
     interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
+    # (New) Governance specific
+    anticipatory_governance_interest::Float64
+    timing_tension::Float64
+    # Household specific properties
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
-    houseowner_type::HouseOwner
+    action_method::ActionMethod
     willingness_to_upgrade::Float64
     tolerance_level_affectors::Float64
     neighbor_distance::Int
@@ -63,14 +81,19 @@ end
     # Properties
     information::Bool = false # information on state of the lake
     legislation::Bool = false # legislation power to enforce new rules
+    budget::Float64 = 1_000_000 # Based off of SEK, but is essentiall a unitless currency.
+    budget_σ::Float64 = 50_000 # Variance of yearly budget (simulates federal grants, budget cuts etc)
     # Actions
     regulate::Bool = true
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
     interventions::Dict{Integer,Vector{Intervention}} = Dict(-1 => [WastewaterTreatment()]) # Set of interventions municipality will act on
+    # Related to anticipatorygovernance
+    anticipatory_governance_interest::Float64 = 0.0
+    timing_tension::Float64 = 0.0
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
-    houseowner_type::HouseOwner = Introverted()
+    action_method::ActionMethod = Disengaged()
     willingness_to_upgrade::Float64 = 0.2
     tolerance_level_affectors::Float64 = 50.0
     neighbor_distance::Int = 3
@@ -85,9 +108,9 @@ struct Pike <: Threshold end
 struct Nutrients <: Threshold end
 
 
-struct Introverted <: HouseOwner end
-struct Social <: HouseOwner end
-struct Enforced <: HouseOwner end
+struct Disengaged <: ActionMethod end
+struct Social <: ActionMethod end
+struct Enforced <: ActionMethod end
 
 """
     Constant()
@@ -144,6 +167,54 @@ Synthetic nutrient profile that alters lake dynamics regardless of municipal man
         TransientUp(start_year = 0, post_target_series = Constant())
 end
 
+@with_kw mutable struct MunicipalityPolitician <: Engagement
+    @deftype Float64
+    capacity = 0.0
+    time = 0.0
+    commitment = 0.0
+end
+@with_kw mutable struct MunicipalityWaterCouncilLiason <: Engagement
+    @deftype Float64
+    capacity = 0.0
+    time = 0.0
+    commitment = 0.0
+end
+@with_kw mutable struct HouseOwner <: Engagement
+    # Fine to edit
+    compliance::Float64 = 0.18 # From willingness to upgrade
+    budget::Float64 = 0.0
+    # Mostly internal, no need to edit
+    oss::Bool = false # Is the sewage system upgraded or not?
+    information::Bool = false # Has this agent been told about the upgrade?
+    implementation_lag::Int = 0 # How long does it take the agent to choose to upgrade?
+    municipality::Int = 0 # ID of the municipality this household belongs to
+end
+struct WaterCouncilVolunteer <: Engagement end
+struct WaterCouncilStaff <: Engagement end
+@with_kw mutable struct Angler <: Engagement
+    @deftype Float64
+    overfishing = 0.0
+end
+@with_kw mutable struct Tourist <: Engagement
+    @deftype Float64
+    littering = 0.0
+end
+struct OrganisationMember <: Engagement end
+struct IndustryRepresentative <: Engagement end
+struct ScientificExpert <: Engagement end
+struct FishingAssociationRepresentative <: Engagement end
+struct ForestryAssociationRepresentative <: Engagement end
+@with_kw mutable struct LandOwner <: Engagement
+    @deftype Float64
+    water_council_engagement = 0.0
+    public_access = 0.0
+    budget = 0.0
+end
+@with_kw mutable struct FarmerAssociationRepresentative <: Engagement
+    @deftype Float64
+    water_council_engagement = -1.0
+end
+
 # Properties of the experiment. For now this is a drop in for GUI values
 # TODO: Some of these may need to be put under Governance
 @with_kw mutable struct Experiment
@@ -157,6 +228,7 @@ end
     critical_nutrients::Float64 = 3.0
     recycling_rate::Float64 = 0.1
     max_sewage_water::Float64 = 0.1
+    water_council_central_node::Bool = false
 end
 
 @with_kw_noshow mutable struct Outcomes

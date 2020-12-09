@@ -50,6 +50,7 @@ mutable struct Municipality <: AbstractAgent
     respond_direct::Bool
     threshold_variable::Threshold
     interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
+    policies::Dict{Type{<:Intervention},NamedTuple} # Descision parameters, subject to change
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner
     willingness_to_upgrade::Float64
@@ -68,6 +69,9 @@ end
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
     interventions::Dict{Integer,Vector{Intervention}} = Dict(-1 => [WastewaterTreatment()]) # Set of interventions municipality will act on
+    # Additions for descision making. Subject to change
+    policies::Dict{Type{<:Intervention},NamedTuple} =
+        Dict{Type{<:Intervention},NamedTuple}()
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner = Introverted()
@@ -80,10 +84,8 @@ struct Idle <: Status end
 struct Running <: Status end
 struct Complete <: Status end
 
-
 struct Pike <: Threshold end
 struct Nutrients <: Threshold end
-
 
 struct Introverted <: HouseOwner end
 struct Social <: HouseOwner end
@@ -157,6 +159,10 @@ end
     critical_nutrients::Float64 = 3.0
     recycling_rate::Float64 = 0.1
     max_sewage_water::Float64 = 0.1
+    # Additions for descision making. Subject to change
+    objectives::NTuple{N,Function} where {N} =
+        (Descisions.min_time, Descisions.min_acceleration, Descisions.min_price)
+    target::Function = Descisions.clear_state
 end
 
 @with_kw_noshow mutable struct Outcomes
@@ -199,7 +205,6 @@ function Base.show(io::IO, ::MIME"text/plain", p::Outcomes)
         println(io, "Number of households upgraded: $(p.upgraded_households_sum)")
     end
 end
-
 
 struct WastewaterTreatment <: Intervention end
 @with_kw_noshow mutable struct Planting <: Intervention

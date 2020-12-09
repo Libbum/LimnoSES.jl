@@ -1,4 +1,4 @@
-export initialise, plan, planner
+export initialise, plan, planner, policy, scan
 
 """
     initialise()
@@ -57,6 +57,7 @@ function initialise(;
             gov.respond_direct,
             gov.threshold_variable,
             gov.interventions,
+            gov.policies,
             gov.agents_uniform,
             gov.houseowner_type,
             gov.willingness_to_upgrade,
@@ -72,10 +73,9 @@ function initialise(;
                 rand(real_estate_x:min(real_estate_x + juristiction_x, first(griddims))),
                 rand(1:last(griddims)),
             )
-            while !isempty(pos, model) ||
-                  pos == municipality_pos
+            while !isempty(pos, model) || pos == municipality_pos
                 pos = (
-                    rand(real_estate_x:(real_estate_x + juristiction_x)),
+                    rand(real_estate_x:(real_estate_x+juristiction_x)),
                     rand(1:last(griddims)),
                 )
             end
@@ -158,6 +158,37 @@ function plan(::Type{I}, values::Vector{<:NamedTuple}) where {I<:Intervention}
     end
     schedule
 end
+
+"""
+    policy(scan(Trawling), scan(Planting; threshold = (15.3, 60.9)))
+
+Enables the descision module to alter suggested planner values, optimising the system
+state when possible. Used to set the `policies` of each [Municipality](@ref).
+"""
+policy(scans::Dict{Type{<:Intervention},NamedTuple}...) = merge(vcat, scans...)
+
+"""
+    scan(Trawling) # Activate decisions on trawling using default ranges.
+    scan(Trawling; rate = (5e-3, 2e-2)) # Activate trawling descisions with custom
+                                        # search range for `rate`.
+
+Use the descision making optimiser to fine tune values in the planner.
+`scan` expects a lower and upper bound of a range to scan for each intervention
+property.
+For the moment, this strategy excludes `WastewaterTreatment`, and does not
+adjust active years. These must still be set in the planner.
+
+Should be used in conjuction with [`policy`](@ref).
+"""
+function scan(::Type{I}; active = true, kwargs...) where {I<:Intervention}
+    return Dict{Type{<:Intervention},NamedTuple}(I => default_policy(I; kwargs...))
+end
+
+default_policy(::Type{Planting}; threshold = (5.0, 60.0), rate = (1e-3, 1e-2)) =
+    (threshold = threshold, rate = rate)
+default_policy(::Type{Trawling}; threshold = (40.0, 80.0), rate = (1e-4, 1e-2)) =
+    (threshold = threshold, rate = rate)
+default_policy(::Type{Angling}; rate = (2.25e-3, 2.7e-3)) = (rate = rate,)
 
 ## Helpers
 

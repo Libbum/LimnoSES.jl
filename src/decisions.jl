@@ -1,20 +1,46 @@
-module Descisions
+module Decisions
 using LimnoSES
-import LimnoSES: municipalities, lake_dynamics!, lake_initial_state, Intervention
+import LimnoSES:
+    municipalities, lake_dynamics!, lake_initial_state, Intervention, LakeParameters
 using BlackBoxOptim
 import OrdinaryDiffEq
+
 ##############################################################
 # Predefined objective functions
 ##############################################################
 
-# These are considerations at a WC level or Municipality level?
-# For now, it's going to be at the WC, but some need to be calculated over individual
-# Municipality descisions.
+"""
+    min_time(model)
+
+Objective function that returns the time of the model at the end of a run. If a target
+function is interested in moving from one state to the next in the quickest amount of
+time, this is a useful objective.
+"""
 min_time(model::ABM) = model.lake.t
+
+"""
+    min_acceleration(model)
+
+Objective function that returns the sum of the absolute value of the second derivative of
+all lake variables. Span is from start of the optimisation to the final `model.year`
+with monthly increments.
+
+Helps to mitigate large spikes in transitions.
+"""
 min_acceleration(model::ABM) = sum(abs.(model.lake.sol(0:12:(365*model.year), Val{2})))
+
+"""
+    min_price(model)
+
+Objective function that returns a "price" of future `Planting` and `Trawling`
+interventions, which ultimately is just a sum of all proposed rates.
+
+In future it will be possible to apply a weight to each of the interventions as one is
+most likely more costly than the other.
+"""
 function min_price(model::ABM)
     # By the time we get here, we're looking at interventions still to do (some may have already been completed, but they have already been budgeted.
-    # This descision is only for however much needs to be done in the future.
+    # This decision is only for however much needs to be done in the future.
 
     # Our budget is not pinned to money directly, but there is an assumed cost based on years to implement at the given rate.
     # This should probably be weighted in the future, since different interventions most likely cost more than others.
@@ -43,29 +69,35 @@ end
 # Predefined target functions
 ##############################################################
 
+"""
+    clear_state(model, s)
+
+Targets the clear lake steady state, with an extra stopping condition if that state was
+not reached within 60 years.
+
+Calculated via instantaneous comparisons at latest model time of all lake variables, with
+an additional check to verify a near-zero first derivative.
+"""
 function clear_state(model, s)
     model.year == 60 && return true # Escape if we dont converge after 60 years
 
     clear = lake_initial_state(Clear, Martin)[1]
     # Due to nutrient differences we will reach slightly different equilibria (reason for 17.5).
     # We also want the system to stabilise a bit, so we wait until the derivatives calm down too.
-    # TODO: Root find th accepted distance
-    sum(abs2.(model.lake.u - clear)) < 17.5 &&
-    sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < 1e-4
+    # TODO: Root find the accepted distance
+    sum(abs2.(model.lake.u - clear)) < 30.0 &&
+    sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < 5e-4
 end
 
+"""
+    create_test_model(model)
+
+Creates a complete copy of the current model, with a modified set of interventions.
+All "completed" interventions (i.e. ones that have happened in the models' past) are
+ignored. This test model is then used in the optimisation procedure.
+"""
 function create_test_model(model::ABM)
     m = deepcopy(model)
-    # Re-initialise certain parameters we need to satisfy in the optimisation
-    prob = OrdinaryDiffEq.ODEProblem(lake_dynamics!, model.lake.u, (0.0, Inf), model.lake.p)
-
-    m.lake = OrdinaryDiffEq.init(prob, OrdinaryDiffEq.Tsit5())
-    m.year = 0
-    m.init_nutrients = model.lake.p.nutrients
-    m.init_pike_mortality = model.lake.p.mp
-
-    # Maybe we will need this, not sure just yet.
-    push!(m.properties, :true_year_zero => model.year)
 
     # Drop previous (completed) interventions.
     for municipality in municipalities(m)
@@ -82,10 +114,13 @@ function create_test_model(model::ABM)
     return m
 end
 
-# Thoughts.
-# From this point, we may have already done 8 years of interventions. How do we choose to do more or less?
-# This must come as part of the descision in `make_descision`. `cost` does not care about this. It has
-# campain length paramaters from this time on that it has to play with. That could be zero years or more.
+"""
+    apply_policies!(x, test::ABM)
+
+Applies new test values to all active intervention properties. Is used before each
+optimisation call, but also to finalise the decision process via a `best_candidate`
+call.
+"""
 function apply_policies!(x, test)
     xs = Iterators.Stateful(x)
 
@@ -103,6 +138,13 @@ function apply_policies!(x, test)
     return nothing
 end
 
+"""
+    update_true_model!(test, model)
+
+Reconstructs each municipalities `interventions` property in the model after a successful
+optimisation run. Be careful with the model order here, as there's no simple way to
+differentiate the two of them via types.
+"""
 function update_true_model!(test::ABM, model::ABM)
     # Both models have the same municipality ids
     for mid in (m.id for m in municipalities(model))
@@ -118,27 +160,57 @@ function update_true_model!(test::ABM, model::ABM)
     return nothing
 end
 
-function cost(x, test)
-    # Next step: search range has everything from the policies section now in search.
+"""
+    cost(x, u0, p, test::ABM)
+
+Optimization function. To be used in in conjunction with the `bboptimize` call only.
+Needs to be overloaded slightly, since we want to reset the lake dynamics at each call,
+so `model.lake.u` and `model.lake.p` are expected to be passed into the second and third
+variables respectively, with the cut down "test" version of the model being the last
+value.
+"""
+function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
+    # Re-initialise certain parameters we need to satisfy in the optimisation
+    prob = OrdinaryDiffEq.ODEProblem(lake_dynamics!, u0, (0.0, Inf), p)
+
+    test.lake = OrdinaryDiffEq.init(prob, OrdinaryDiffEq.Tsit5())
+    test.year = 0
+    test.init_nutrients = p.nutrients
+    test.init_pike_mortality = p.mp
+
+    # Search range has everything from the policies section now in search.
     # This means that x is the values associated with all of those results.
     # `test` gives us a copy of model, which we can now edit with the new values in x for
     # each parameter
-
-    #x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20.] # Fake x
     apply_policies!(x, test)
 
     Agents.step!(test, agent_step!, model_step!, test.target)
 
-    # Taking a `Tuple(objective_functions)` as `objectives`
-    return map(o -> o(test), test.objectives)
+    return map(o -> o[1](test), test.objectives)
 end
 
-function make_descision!(model::ABM)
+"""
+    make_decision!(model)
+
+Runs the optimisation routine, calling on policy ranges set via [`policy`](@ref).
+Decisions are made only from the year of the call onwards.
+
+## Keywords
+
+A few keywords that can be sent to the `bboptimize` routine have been made available
+here:
+
+- `MaxTime = 60`, a hard time limit for the optimiser to run.
+- `TraceMode = :compact`, logging output control. Other options are `:silent` and
+`:verbose`.
+"""
+function make_decision!(model::ABM; MaxTime = 60, TraceMode = :compact)
     # Create our test model outside of the loop, it will therefore be cut down to
-    # approperate points already.
+    # appropriate points already.
     test = create_test_model(model)
 
     objective_dimension = length(test.objectives)
+    w = last.(test.objectives)
 
     # We only need the tuples for the search range here. So long as we use the same
     # scheduler, there's no need to worry about anything else on the other side
@@ -153,20 +225,35 @@ function make_descision!(model::ABM)
         end
     end
 
+    # No need to optimise if there are no more interventions
+    isempty(search) && return nothing
+
     result = bboptimize(
-        x -> cost(x, test),
+        x -> cost(x, model.lake.u, model.lake.p, test),
         Method = :borg_moea,
-        FitnessScheme = ParetoFitnessScheme{objective_dimension}(is_minimizing = true),
+        FitnessScheme = ParetoFitnessScheme{objective_dimension}(
+            is_minimizing = true,
+            aggregator = f -> weightedfitness(f, w),
+        ),
         SearchRange = search,
-        MaxTime = 60, # We'll hardcode a timer for now, this can be altered in the future
-    #    TraceMode = :silent,
+        MaxTime = MaxTime,
+        NThreads = max(Threads.nthreads() - 1, 1),
+        TraceMode = TraceMode,
     )
 
     x = best_candidate(result)
 
     apply_policies!(x, test)
     update_true_model!(test, model)
+
     return nothing
 end
+
+"""
+    weightedfitness(f, weights)
+
+Handle objective weights. Should be used as an `aggregator` in `bboptimize`.
+"""
+weightedfitness(f, w) = sum(map((fi, wi) -> fi * wi, f, w))
 
 end # module

@@ -16,7 +16,7 @@ include("initialise.jl")
 include("evolve.jl")
 include("reporting.jl")
 
-include("descisions.jl")
+include("decisions.jl")
 
 end # module
 

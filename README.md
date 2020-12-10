@@ -9,10 +9,18 @@ Currently under active development and will be prone to major breaking changes.
 
 ```julia
 using LimnoSES
+using Decisions
 using Plots
 
 model = initialise(
-    experiment = Experiment(identifier = "municipalities", nutrient_series = Dynamic()),
+    experiment = Experiment(
+        identifier = "municipalities",
+        objectives = objectives(
+            objective(Decisions.min_time),
+            objective(Decisions.min_price, 0.5),
+        ),
+        nutrient_series = Dynamic(),
+    ),
     lake_setup = lake_initial_state(X1, Martin),
     municipalities = Dict(
         "main" => (

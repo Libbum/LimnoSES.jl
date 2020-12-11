@@ -9,7 +9,7 @@ Currently under active development and will be prone to major breaking changes.
 
 ```julia
 using LimnoSES
-using Decisions
+using LimnoSES.Decisions
 using Plots
 
 model = initialise(
@@ -17,11 +17,11 @@ model = initialise(
         identifier = "municipalities",
         objectives = objectives(
             objective(Decisions.min_time),
-            objective(Decisions.min_price, 0.5),
+            objective(Decisions.min_cost, 0.5),
         ),
         nutrient_series = Dynamic(),
     ),
-    lake_setup = lake_initial_state(X1, Martin),
+    lake_setup = lake_initial_state(X2, Martin),
     municipalities = Dict(
         "main" => (
             Governance(
@@ -55,9 +55,9 @@ model = initialise(
         ),
     ),
 )
-_, data = run!(model, agent_step!, model_step!, 60; mdata = [nutrients])
+_, data = run!(model, agent_step!, model_step!, 100; mdata = [nutrients])
 
-discrete = model.lake.sol(0:12:365*60)
+discrete = model.lake.sol(0:12:365*100)
 
-plot(discrete; labels = ["Bream" "Pike" "Vegetation"], xticks = (0:365*5:365*60, 0:5:60))
+plot(discrete; labels = ["Bream" "Pike" "Vegetation"], xticks = (0:365*5:365*100, 0:5:100))
 ```

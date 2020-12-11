@@ -1,7 +1,6 @@
 module Decisions
 using LimnoSES
-import LimnoSES:
-    municipalities, lake_dynamics!, lake_initial_state, Intervention, LakeParameters
+import LimnoSES: municipalities, lake_dynamics!, Intervention, LakeParameters
 using BlackBoxOptim
 import OrdinaryDiffEq
 
@@ -16,7 +15,7 @@ Objective function that returns the time of the model at the end of a run. If a 
 function is interested in moving from one state to the next in the quickest amount of
 time, this is a useful objective.
 """
-min_time(model::ABM) = model.lake.t
+min_time(model::ABM) = model.lake.t/365.0
 
 """
     min_acceleration(model)
@@ -30,15 +29,15 @@ Helps to mitigate large spikes in transitions.
 min_acceleration(model::ABM) = sum(abs.(model.lake.sol(0:12:(365*model.year), Val{2})))
 
 """
-    min_price(model)
+    min_cost(model)
 
-Objective function that returns a "price" of future `Planting` and `Trawling`
+Objective function that returns a "cost" of future `Planting` and `Trawling`
 interventions, which ultimately is just a sum of all proposed rates.
 
 In future it will be possible to apply a weight to each of the interventions as one is
 most likely more costly than the other.
 """
-function min_price(model::ABM)
+function min_cost(model::ABM)
     # By the time we get here, we're looking at interventions still to do (some may have already been completed, but they have already been budgeted.
     # This decision is only for however much needs to be done in the future.
 
@@ -73,19 +72,24 @@ end
     clear_state(model, s)
 
 Targets the clear lake steady state, with an extra stopping condition if that state was
-not reached within 60 years.
+not reached within 100 years.
 
 Calculated via instantaneous comparisons at latest model time of all lake variables, with
 an additional check to verify a near-zero first derivative.
+
+**NOTE:** This target is hard coded to the default `Martin` parameters.
 """
 function clear_state(model, s)
-    model.year == 60 && return true # Escape if we dont converge after 60 years
+    model.year == 100 && return true # Escape if we dont converge after 100 years
 
-    clear = lake_initial_state(Clear, Martin)[1]
-    # Due to nutrient differences we will reach slightly different equilibria (reason for 17.5).
+    B, P, V = model.lake.u
+
+    # Based on bifurcation analysis: for a clear state, we need
+    # V >= 33.4, B < 13.6 and if n > 1 then P > 0.5
     # We also want the system to stabilise a bit, so we wait until the derivatives calm down too.
-    # TODO: Root find the accepted distance
-    sum(abs2.(model.lake.u - clear)) < 30.0 &&
+    B < 13.6 &&
+    V >= 33.4 &&
+    (model.lake.p.nutrients > 1.0 ? P > 0.5 : true) &&
     sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < 5e-4
 end
 
@@ -200,11 +204,11 @@ Decisions are made only from the year of the call onwards.
 A few keywords that can be sent to the `bboptimize` routine have been made available
 here:
 
-- `MaxTime = 60`, a hard time limit for the optimiser to run.
+- `MaxTime = 300`, a hard time limit for the optimiser to run.
 - `TraceMode = :compact`, logging output control. Other options are `:silent` and
 `:verbose`.
 """
-function make_decision!(model::ABM; MaxTime = 60, TraceMode = :compact)
+function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
     # Create our test model outside of the loop, it will therefore be cut down to
     # appropriate points already.
     test = create_test_model(model)

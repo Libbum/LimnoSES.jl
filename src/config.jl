@@ -163,7 +163,7 @@ end
     objectives::NTuple{N,Tuple{Function,Float64}} where {N} = (
         (Decisions.min_time, 1.0),
         (Decisions.min_acceleration, 1.0),
-        (Decisions.min_price, 1.0),
+        (Decisions.min_cost, 1.0),
     )
     target::Function = Decisions.clear_state
 end
@@ -212,11 +212,11 @@ end
 struct WastewaterTreatment <: Intervention end
 @with_kw_noshow mutable struct Planting <: Intervention
     threshold::Float64 = 20.0
-    rate::Float64 = 1e-3
+    rate::Float64 = 1e-4
 end
 @with_kw_noshow mutable struct Trawling <: Intervention
     threshold::Float64 = 50.0
-    rate::Float64 = 1e-3
+    rate::Float64 = 5e-4
 end
 @with_kw_noshow mutable struct Angling <: Intervention
     rate::Float64 = 2.25e-4 # 10% of default rate

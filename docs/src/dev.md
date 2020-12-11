@@ -37,7 +37,7 @@ Pre-defined values:
 ```@docs
 LimnoSES.Decisions.min_time
 LimnoSES.Decisions.min_acceleration
-LimnoSES.Decisions.min_price
+LimnoSES.Decisions.min_cost
 ```
 
 ## Runtime

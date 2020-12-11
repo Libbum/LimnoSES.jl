@@ -191,7 +191,7 @@ default_policy(::Type{Trawling}; threshold = (40.0, 80.0), rate = (1e-4, 1e-2)) 
 default_policy(::Type{Angling}; rate = (2.25e-3, 2.7e-3)) = (rate = rate,)
 
 """
-    objectives(objective(min_time), objective(min_price, 0.5))
+    objectives(objective(min_time), objective(min_cost, 0.5))
 
 Constructs a set of objectives which will be used to optimise policy towards the chosen
 target.

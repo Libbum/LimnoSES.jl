@@ -81,9 +81,9 @@ function clear_state(model, s)
     B, P, V = model.lake.u
 
     # Based on bifurcation analysis: for a clear state, we need
-    # V >= 33.4, B < 13.6 and if n > 1 then P > 0.5
+    # V >= 33.4, B < 31.6 and if n > 1 then P > 0.5
     # We also want the system to stabilise a bit, so we wait until the derivatives calm down too.
-    B < 13.6 &&
+    B < 31.6 &&
     V >= 33.4 &&
     (model.lake.p.nutrients > 1.0 ? P > 0.5 : true) &&
     sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < 5e-4
@@ -98,6 +98,8 @@ ignored. This test model is then used in the optimisation procedure.
 """
 function create_test_model(model::ABM)
     m = deepcopy(model)
+
+    push!(m.properties, :test => true)
 
     # Drop previous (completed) interventions.
     for municipality in municipalities(m)
@@ -227,6 +229,11 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
 
     # No need to optimise if there are no more interventions
     isempty(search) && return nothing
+
+    if TraceMode != :silent
+        word = model.year == model.decision_start ? "Starting" : "Adjusting"
+        println("$(word) policy decisions in year $(model.year)")
+    end
 
     result = bboptimize(
         x -> cost(x, model.lake.u, model.lake.p, test),

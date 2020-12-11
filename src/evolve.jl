@@ -18,7 +18,6 @@ active_interventions(m::Municipality, year::Int) = vcat(
     get(m.interventions, year, Intervention[]),
 )
 
-
 function agent_step!(house::Household, model) # yearly
     # Once a year households may update their oss
     if !house.oss && house.information
@@ -67,6 +66,9 @@ function agent_step!(municipality::Municipality, model)
 end
 
 function model_step!(model)
+    # Run the decision optimiser only if this is not a test model.
+    # This check avoids an recusion based stack overflow.
+    haskey(model.properties, :test) || set_policy!(model)
 
     household_log!(model)
     # Update bream stock, pike stock, vegetation and nutrients (daily)
@@ -89,6 +91,15 @@ function model_step!(model)
     #     model.outcomes_year_when_desired_pike_is_back == 0
     #     restoration_log!(model)
     # end
+end
+
+function set_policy!(model::ABM)
+    if model.decision_start == model.year || (
+        model.year > model.decision_start &&
+        mod(model.year - model.decision_start, model.decision_every) == 0
+    )
+        make_decision!(model)
+    end
 end
 
 function household_log!(model::ABM)

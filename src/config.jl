@@ -160,12 +160,11 @@ end
     recycling_rate::Float64 = 0.1
     max_sewage_water::Float64 = 0.1
     # Additions for descision making. Subject to change
-    objectives::NTuple{N,Tuple{Function,Float64}} where {N} = (
-        (min_time, 1.0),
-        (min_acceleration, 1.0),
-        (min_cost, 1.0),
-    )
+    objectives::NTuple{N,Tuple{Function,Float64}} where {N} =
+        ((min_time, 1.0), (min_acceleration, 1.0), (min_cost, 1.0))
     target::Function = clear_state
+    decision_start::Int = 5 # year when first optimisation is completed
+    decision_every::Int = 10 # year when next optimisation is completed (if target not met)
 end
 
 @with_kw_noshow mutable struct Outcomes

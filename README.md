@@ -9,15 +9,14 @@ Currently under active development and will be prone to major breaking changes.
 
 ```julia
 using LimnoSES
-using LimnoSES.Decisions
 using Plots
 
 model = initialise(
     experiment = Experiment(
         identifier = "municipalities",
         objectives = objectives(
-            objective(Decisions.min_time),
-            objective(Decisions.min_cost, 0.5),
+            objective(min_time),
+            objective(min_cost, 0.5),
         ),
         nutrient_series = Dynamic(),
     ),

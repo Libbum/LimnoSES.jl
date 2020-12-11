@@ -161,11 +161,11 @@ end
     max_sewage_water::Float64 = 0.1
     # Additions for descision making. Subject to change
     objectives::NTuple{N,Tuple{Function,Float64}} where {N} = (
-        (Decisions.min_time, 1.0),
-        (Decisions.min_acceleration, 1.0),
-        (Decisions.min_cost, 1.0),
+        (min_time, 1.0),
+        (min_acceleration, 1.0),
+        (min_cost, 1.0),
     )
-    target::Function = Decisions.clear_state
+    target::Function = clear_state
 end
 
 @with_kw_noshow mutable struct Outcomes

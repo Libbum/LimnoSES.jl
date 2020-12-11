@@ -1,8 +1,4 @@
-module Decisions
-using LimnoSES
-import LimnoSES: municipalities, lake_dynamics!, Intervention, LakeParameters
-using BlackBoxOptim
-import OrdinaryDiffEq
+export min_time, min_acceleration, min_cost, clear_state, make_decision!
 
 ##############################################################
 # Predefined objective functions
@@ -260,4 +256,3 @@ Handle objective weights. Should be used as an `aggregator` in `bboptimize`.
 """
 weightedfitness(f, w) = sum(map((fi, wi) -> fi * wi, f, w))
 
-end # module

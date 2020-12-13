@@ -164,7 +164,7 @@ end
         ((min_time, 1.0), (min_acceleration, 1.0), (min_cost, 1.0))
     target::Function = clear_state
     decision_start::Int = 5 # year when first optimisation is completed
-    decision_every::Int = 10 # year when next optimisation is completed (if target not met)
+    decision_every::Int = 100 # year when next optimisation is completed (if target not met)
 end
 
 @with_kw_noshow mutable struct Outcomes

@@ -165,6 +165,7 @@ end
     target::Function = clear_state
     decision_start::Int = 5 # year when first optimisation is completed
     decision_every::Int = 100 # year when next optimisation is completed (if target not met)
+    decide_current_term_only::Bool = false # If true, only optimise the next X years
 end
 
 @with_kw_noshow mutable struct Outcomes

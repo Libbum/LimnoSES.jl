@@ -11,7 +11,7 @@ Objective function that returns the time of the model at the end of a run. If a 
 function is interested in moving from one state to the next in the quickest amount of
 time, this is a useful objective.
 """
-min_time(model::ABM) = model.lake.t/365.0
+min_time(model::ABM) = model.lake.t / 365.0
 
 """
     min_acceleration(model)
@@ -107,7 +107,14 @@ function create_test_model(model::ABM)
         for (k, v) in municipality.interventions
             if k == -1
                 push!(newi, k => v)
-            elseif k - model.year >= 0
+            elseif k - model.year >= 0 && (
+                (
+                    model.decide_current_term_only &&
+                    k <= model.year + model.decision_every
+                ) || !model.decide_current_term_only
+            )
+                # We also drop future interventions that are outside
+                # the policy window if such a flag is active.
                 push!(newi, k - model.year => v)
             end
         end

@@ -50,6 +50,7 @@ mutable struct Municipality <: AbstractAgent
     respond_direct::Bool
     threshold_variable::Threshold
     interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
+    policies::Dict{Type{<:Intervention},NamedTuple} # Decision parameters, subject to change
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner
     willingness_to_upgrade::Float64
@@ -68,6 +69,9 @@ end
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
     interventions::Dict{Integer,Vector{Intervention}} = Dict(-1 => [WastewaterTreatment()]) # Set of interventions municipality will act on
+    # Additions for descision making. Subject to change
+    policies::Dict{Type{<:Intervention},NamedTuple} =
+        Dict{Type{<:Intervention},NamedTuple}()
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner = Introverted()
@@ -80,10 +84,8 @@ struct Idle <: Status end
 struct Running <: Status end
 struct Complete <: Status end
 
-
 struct Pike <: Threshold end
 struct Nutrients <: Threshold end
-
 
 struct Introverted <: HouseOwner end
 struct Social <: HouseOwner end
@@ -157,6 +159,13 @@ end
     critical_nutrients::Float64 = 3.0
     recycling_rate::Float64 = 0.1
     max_sewage_water::Float64 = 0.1
+    # Additions for descision making. Subject to change
+    objectives::NTuple{N,Tuple{Function,Float64}} where {N} =
+        ((min_time, 1.0), (min_acceleration, 1.0), (min_cost, 1.0))
+    target::Function = clear_state
+    decision_start::Int = 5 # year when first optimisation is completed
+    decision_every::Int = 100 # year when next optimisation is completed (if target not met)
+    decide_current_term_only::Bool = false # If true, only optimise the next X years
 end
 
 @with_kw_noshow mutable struct Outcomes
@@ -200,15 +209,14 @@ function Base.show(io::IO, ::MIME"text/plain", p::Outcomes)
     end
 end
 
-
 struct WastewaterTreatment <: Intervention end
 @with_kw_noshow mutable struct Planting <: Intervention
     threshold::Float64 = 20.0
-    rate::Float64 = 1e-3
+    rate::Float64 = 1e-4
 end
 @with_kw_noshow mutable struct Trawling <: Intervention
     threshold::Float64 = 50.0
-    rate::Float64 = 1e-3
+    rate::Float64 = 5e-4
 end
 @with_kw_noshow mutable struct Angling <: Intervention
     rate::Float64 = 2.25e-4 # 10% of default rate

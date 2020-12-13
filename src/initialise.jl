@@ -1,4 +1,4 @@
-export initialise, plan, planner
+export initialise, plan, planner, policy, scan, objective, objectives
 
 """
     initialise()
@@ -41,7 +41,7 @@ function initialise(;
     for (name, (gov, houses)) in municipalities
         #TODO: Do a proper voronoi partition, not this primitive segregation
         juristiction_x = Int(round(first(griddims) * (houses / total_houses)) - 1) # Separation of municipalities in x
-        # Place Municipality headquarters in the middle of its juristiction
+        # Place Municipality headquarters in the middle of its jurisdiction
         municipality_id = nextid(model)
         municipality_pos = (
             Int(round((juristiction_x / 2) + real_estate_x)),
@@ -57,6 +57,7 @@ function initialise(;
             gov.respond_direct,
             gov.threshold_variable,
             gov.interventions,
+            gov.policies,
             gov.agents_uniform,
             gov.houseowner_type,
             gov.willingness_to_upgrade,
@@ -66,16 +67,15 @@ function initialise(;
             0,
         )
         add_agent_pos!(municipality, model)
-        # Place houses within municipality juristiction
+        # Place houses within municipality jurisdiction
         for _ in 1:houses
             pos = (
                 rand(real_estate_x:min(real_estate_x + juristiction_x, first(griddims))),
                 rand(1:last(griddims)),
             )
-            while !isempty(pos, model) ||
-                  pos == municipality_pos
+            while !isempty(pos, model) || pos == municipality_pos
                 pos = (
-                    rand(real_estate_x:(real_estate_x + juristiction_x)),
+                    rand(real_estate_x:(real_estate_x+juristiction_x)),
                     rand(1:last(griddims)),
                 )
             end
@@ -124,7 +124,7 @@ the collection of interventions will be active. As a convention, year `-1` denot
 'always active' intervention.
 
 The result can be provided to `municipality.interventions`, although
-this function should almost always used in conjuction with [`planner`](@ref).
+this function should almost always used in conjunction with [`planner`](@ref).
 """
 plan(::Type{I}; kwargs...) where {I<:Intervention} = plan(I, -1; kwargs...)
 
@@ -158,6 +158,63 @@ function plan(::Type{I}, values::Vector{<:NamedTuple}) where {I<:Intervention}
     end
     schedule
 end
+
+"""
+    policy(scan(Trawling), scan(Planting; threshold = (15.3, 60.9)))
+
+Enables the decision module to alter suggested planner values, optimising the system
+state when possible. Used to set the `policies` of each [Municipality](@ref).
+"""
+policy(scans::Dict{Type{<:Intervention},NamedTuple}...) = merge(vcat, scans...)
+
+"""
+    scan(Trawling) # Activate decisions on trawling using default ranges.
+    scan(Trawling; rate = (5e-3, 2e-2)) # Activate trawling decisions with custom
+                                        # search range for `rate`.
+
+Use the decision making optimiser to fine tune values in the planner.
+`scan` expects a lower and upper bound of a range to scan for each intervention
+property.
+For the moment, this strategy excludes `WastewaterTreatment`, and does not
+adjust active years. These must still be set in the planner.
+
+Should be used in conjunction with [`policy`](@ref).
+"""
+function scan(::Type{I}; kwargs...) where {I<:Intervention}
+    return Dict{Type{<:Intervention},NamedTuple}(I => default_policy(I; kwargs...))
+end
+
+default_policy(::Type{Planting}; threshold = (5.0, 60.0), rate = (1e-3, 1e-2)) =
+    (threshold = threshold, rate = rate)
+default_policy(::Type{Trawling}; threshold = (40.0, 80.0), rate = (1e-4, 1e-2)) =
+    (threshold = threshold, rate = rate)
+default_policy(::Type{Angling}; rate = (2.25e-3, 2.7e-3)) = (rate = rate,)
+
+"""
+    objectives(objective(min_time), objective(min_cost, 0.5))
+
+Constructs a set of objectives which will be used to optimise policy towards the chosen
+target.
+"""
+function objectives(objs::Tuple{Function,<:Real}...)
+    fns, weights = collect(zip(objs...))
+    weights = Float64.(weights ./ sum(weights))
+    return Tuple(zip(fns, weights))
+end
+
+"""
+    objective(min_time)
+    objective(min_acceleration, 2)
+
+Provides a weighted objective to be used when optimising policy. Should be used in
+conjunction with [`objectives`](@ref).
+
+When providing a weight, this value can be any positive `Real` number which will
+rank this objective higher or lower than other objectives. It is not imperative
+to make sure all numbers entered in the policy to add up to 100%, but bear in mind
+that the values will be normalised for the optimisation.
+"""
+objective(obj::Function, weight::R = 1.0) where {R<:Real} = (obj, weight)
 
 ## Helpers
 

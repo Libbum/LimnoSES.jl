@@ -2,7 +2,9 @@ module LimnoSES
 
 using Reexport
 @reexport using Agents, StatsBase
-using Parameters, DataFrames
+using BlackBoxOptim
+using DataFrames
+using Parameters
 import OrdinaryDiffEq
 
 include("config.jl")
@@ -15,6 +17,7 @@ include("initialise.jl")
 include("evolve.jl")
 include("reporting.jl")
 
-end # module
+include("decisions.jl")
 
+end # module
 

@@ -120,7 +120,7 @@
         @test pol == plant
 
         pol = policy(scan(Planting), scan(Angling))
-        @test collect(keys(pol)) == [Planting, Angling]
+        @test sort(collect(keys(pol))) == [Angling, Planting]
     end
     @testset "objective" begin
         obj = objective(min_time)

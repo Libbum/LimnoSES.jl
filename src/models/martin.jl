@@ -62,6 +62,13 @@ preset_conditions(::Type{X1}, ::Type{Martin}) = (2.2, [36.730, 2.87725, 26.6798]
 preset_conditions(::Type{X2}, ::Type{Martin}) = (1.05, [59.0606, 0.819124, 12.0023]) #unstable
 preset_conditions(::Type{X3}, ::Type{Martin}) = (1.05, [64.0559, 0.374008, 10.3631]) #stable
 
+preset_conditions(::Type{S1}, ::Type{Martin}) = (3.0, [20.0, 3.5, 50.0]) #clear eutrophic, unstable
+preset_conditions(::Type{S2}, ::Type{Martin}) = (3.0, [85.436, 0.0373, 6.061]) #turbid eutrophic, stable
+preset_conditions(::Type{S3}, ::Type{Martin}) = (2.0, [79.597, 0.050, 6.928]) #turbid transition, stable
+preset_conditions(::Type{T1}, ::Type{Martin}) = (3.0, [20.0, 3.5, 50.0]) #clear eutrophic unstable
+preset_conditions(::Type{T2}, ::Type{Martin}) = (2.0, [26.901, 2.809, 41.530]) #clear transition, stable
+preset_conditions(::Type{T3}, ::Type{Martin}) = (0.9, [21.647, 2.050, 53.726]) #clear oligotrophic, high pike concentration, stable
+
 function Base.show(io::IO, ::MIME"text/plain", p::MartinParameters)
     println(io, "Parameters for lake dynamics (Martin) model):")
     println(io, "Nutrient level: $(p.nutrients)")

@@ -20,6 +20,12 @@ export Household,
     X1,
     X2,
     X3,
+    S1,
+    S2,
+    S3,
+    T1,
+    T2,
+    T3,
     Experiment,
     LakeParameters
 
@@ -232,6 +238,13 @@ struct Turbid <: LakeDefinition end
 struct X1 <: LakeDefinition end
 struct X2 <: LakeDefinition end
 struct X3 <: LakeDefinition end
+
+struct S1 <: LakeDefinition end
+struct S2 <: LakeDefinition end
+struct S3 <: LakeDefinition end
+struct T1 <: LakeDefinition end
+struct T2 <: LakeDefinition end
+struct T3 <: LakeDefinition end
 
 function lake_initial_state(
     ::Type{L},

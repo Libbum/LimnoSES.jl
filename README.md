@@ -3,6 +3,7 @@ A limnological social-ecological system hybrid.
 
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://libbum.github.io/LimnoSES.jl/dev)
 [![CI](https://github.com/Libbum/LimnoSES.jl/workflows/CI/badge.svg)](https://github.com/Libbum/LimnoSES.jl/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/Libbum/LimnoSES.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/Libbum/LimnoSES.jl)
 
 Currently under active development and will be prone to major breaking changes.
 

@@ -37,11 +37,14 @@ LimnoSES.make_decision!
 
 Targets are written in the form of an
 [Agents.jl `until`](https://juliadynamics.github.io/Agents.jl/stable/tutorial/#Agents.step!)
-function. Any stopping condition is possible and can be user generated. The following
+function. Any stopping condition is possible and can be user generated, although there
+**must** be a hard stop at some point in the future. `s == 100 && return true` is the
+default. The following
 examples are pre-defined:
 
 ```@docs
 LimnoSES.clear_state
+LimnoSES.managed_clear_eutrophic
 ```
 
 ## Objectives

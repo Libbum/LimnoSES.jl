@@ -94,9 +94,9 @@ function model_step!(model)
 end
 
 function set_policy!(model::ABM)
-    if model.decision_start == model.year || (
-        model.year > model.decision_start &&
-        mod(model.year - model.decision_start, model.decision_every) == 0
+    if model.policy.start == model.year || (
+        model.year > model.policy.start &&
+        mod(model.year - model.policy.start, model.policy.every) == 0
     )
         make_decision!(model)
     end

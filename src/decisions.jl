@@ -1,4 +1,4 @@
-export min_time, min_acceleration, min_cost, clear_state, make_decision!
+export min_time, min_acceleration, min_cost, clear_state, managed_clear_eutrophic, make_decision!
 
 ##############################################################
 # Predefined objective functions
@@ -90,6 +90,26 @@ function clear_state(model, s)
 end
 
 """
+    managed_clear_eutrophic(model, s)
+
+Targets the `T3` state, which is a high nutrient (`N>=3`), unstable state with a high
+pike population. Will stop at 100 years if not successful.
+
+**Note:** For the moment this targets the region of T3, not the explicit starting point.
+"""
+function managed_clear_eutrophic(model, s)
+    model.year == 100 && return true # Escape if we dont converge after 100 years
+
+    B, P, V = model.lake.u
+
+    P >= 3.5 && V > B
+end
+
+##############################################################
+# Optimisation capacity
+##############################################################
+
+"""
     create_test_model(model)
 
 Creates a complete copy of the current model, with a modified set of interventions.
@@ -109,9 +129,9 @@ function create_test_model(model::ABM)
                 push!(newi, k => v)
             elseif k - model.year >= 0 && (
                 (
-                    model.decide_current_term_only &&
-                    k <= model.year + model.decision_every
-                ) || !model.decide_current_term_only
+                    model.policy.current_term_only &&
+                    k <= model.year + model.policy.every - 1
+                ) || !model.policy.current_term_only
             )
                 # We also drop future interventions that are outside
                 # the policy window if such a flag is active.
@@ -193,9 +213,9 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
     # each parameter
     apply_policies!(x, test)
 
-    Agents.step!(test, agent_step!, model_step!, test.target)
+    Agents.step!(test, agent_step!, model_step!, test.policy.target)
 
-    return map(o -> o[1](test), test.objectives)
+    return map(o -> o[1](test), test.policy.objectives)
 end
 
 """
@@ -218,8 +238,8 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
     # appropriate points already.
     test = create_test_model(model)
 
-    objective_dimension = length(test.objectives)
-    w = last.(test.objectives)
+    objective_dimension = length(test.policy.objectives)
+    w = last.(test.policy.objectives)
 
     # We only need the tuples for the search range here. So long as we use the same
     # scheduler, there's no need to worry about anything else on the other side
@@ -238,7 +258,7 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
     isempty(search) && return nothing
 
     if TraceMode != :silent
-        word = model.year == model.decision_start ? "Starting" : "Adjusting"
+        word = model.year == model.policy.start ? "Starting" : "Adjusting"
         println("$(word) policy decisions in year $(model.year)")
     end
 

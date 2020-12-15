@@ -2,8 +2,8 @@
     model = initialise(lake_setup = lake_initial_state(Clear, Scheffer))
 
     @test nutrients(model) == model.lake.p.nutrients
-    @test vegetation(model.lake) == 50.0
-    @test vegetation([model.lake.u[1]], model.lake.p) == 50.0
+    @test vegetation(model.lake) == [50.0]
+    @test vegetation([model.lake.u[1]], model.lake.p) == [50.0]
 
     model = initialise(
         experiment = Experiment(nutrient_series = Dynamic()),

@@ -6,9 +6,9 @@ nutrients(model) = model.lake.p.nutrients
 # A couple of different vegetation extractors, depending on the shape of your data
 # Good for `model.lake`
 function vegetation(
-    lake::OrdinaryDiffEq.ODEIntegrator{A,B,C,D,E,MartinParameters},
+    lake::OrdinaryDiffEq.ODEIntegrator{A,B,C,D,E,SchefferParameters},
 ) where {A,B,C,D,E}
-    bream = lake.sol.u[1, :]
+    bream = lake.sol[1, :]
     @. lake.p.K * (lake.p.H₃^2 / (lake.p.H₃^2 + bream^2))
 end
 
@@ -17,7 +17,7 @@ function vegetation(B::Vector{Float64}, p::SchefferParameters)
     @. p.K * (p.H₃^2 / (p.H₃^2 + B^2))
 end
 
-
+# TODO: This should now be at the municipality level, not WC.
 function upgrade_efficiency(m::ABM)
     if m.year > m.outcomes_year_when_informed > 0
         if 0 < m.outcomes_year_of_full_upgrade < m.year

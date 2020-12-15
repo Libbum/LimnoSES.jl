@@ -189,36 +189,6 @@ end
     year_of_full_upgrade = 0 #remeber the year when all households finished their update
 end
 
-function Base.show(io::IO, ::MIME"text/plain", p::Outcomes)
-    println(io, "Years when important events occur:")
-    if p.year_when_informed != 0
-        println(
-            io,
-            "Monitoring informs municipality of critical lake status: $(p.year_when_informed)",
-        )
-    end
-    if p.year_when_pike_became_critical != 0
-        println(io, "Pike population became critical: $(p.year_when_pike_became_critical)")
-    end
-    if p.year_when_nutrients_became_critical != 0
-        println(
-            io,
-            "Nuturient level became critical: $(p.year_when_nutrients_became_critical)",
-        )
-    end
-    if p.year_when_desired_pike_is_back != 0
-        println(io, "Pike population recovered: $(p.year_when_desired_pike_is_back)")
-    end
-    if p.year_when_desired_level_is_back != 0
-        println(io, "Nuturient level recovered: $(p.year_when_desired_level_is_back)")
-    end
-    if p.year_of_full_upgrade != 0
-        println(io, "Households fully upgraded: $(p.year_of_full_upgrade)")
-    else
-        println(io, "Number of households upgraded: $(p.upgraded_households_sum)")
-    end
-end
-
 struct WastewaterTreatment <: Intervention end
 @with_kw_noshow mutable struct Planting <: Intervention
     threshold::Float64 = 20.0

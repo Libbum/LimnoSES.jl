@@ -202,7 +202,9 @@ end
 struct OrganisationMember <: Engagement end
 struct IndustryRepresentative <: Engagement end
 struct ScientificExpert <: Engagement end
-struct FishingAssociationRepresentative <: Engagement end
+@with_kw mutable struct FishingAssociationRepresentative <: Engagement
+     interact_WC::Bool = false
+end
 struct ForestryAssociationRepresentative <: Engagement end
 @with_kw mutable struct LandOwner <: Engagement
     @deftype Float64
@@ -305,4 +307,3 @@ function lake_initial_state(
     nutrients, initial_state = preset_conditions(L, M)
     (initial_state, LakeParameters(M, nutrients; kwargs...))
 end
-

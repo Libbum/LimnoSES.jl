@@ -200,7 +200,9 @@ end
     littering = 0.0
 end
 struct OrganisationMember <: Engagement end
-struct IndustryRepresentative <: Engagement end
+@with_kw mutable struct IndustryRepresentative <: Engagement
+    interact_WC::Bool = false
+end
 struct ScientificExpert <: Engagement end
 struct FishingAssociationRepresentative <: Engagement end
 struct ForestryAssociationRepresentative <: Engagement end
@@ -305,4 +307,3 @@ function lake_initial_state(
     nutrients, initial_state = preset_conditions(L, M)
     (initial_state, LakeParameters(M, nutrients; kwargs...))
 end
-

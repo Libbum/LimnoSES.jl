@@ -159,7 +159,7 @@ function apply_policies!(x, test)
             # We must do this in the order of policy range
             if haskey(municipality.policies, typeof(intervention))
                 targets = keys(municipality.policies[typeof(intervention)])
-                assign = zip(targets, Iterators.take(xs, length(targets)))
+                assign = collect(zip(targets, Iterators.take(xs, length(targets))))
                 map(t -> setproperty!(intervention, t[1], t[2]), assign)
             end
         end

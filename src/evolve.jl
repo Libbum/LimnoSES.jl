@@ -174,19 +174,13 @@ function aggregate_regulate!(model::ABM)
     planting = Iterators.filter(i -> i isa Planting, schedule)
     model.lake.p.pv = 0.0
     for project in planting
-        # model.lake.u[3] is vegetation
-        if model.lake.u[3] < project.threshold
-            model.lake.p.pv += project.rate
-        end
+        model.lake.p.pv += project.rate
     end
 
     trawling = Iterators.filter(i -> i isa Trawling, schedule)
     model.lake.p.tb = 0.0
     for project in trawling
-        # model.lake.u[1] is bream
-        if model.lake.u[1] > project.threshold
-            model.lake.p.tb += project.rate
-        end
+        model.lake.p.tb += project.rate
     end
 
     angling = Iterators.filter(i -> i isa Angling, schedule)

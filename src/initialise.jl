@@ -160,7 +160,7 @@ function plan(::Type{I}, values::Vector{<:NamedTuple}) where {I<:Intervention}
 end
 
 """
-    policy(scan(Trawling), scan(Planting; threshold = (15.3, 60.9)))
+    policy(scan(Trawling), scan(Planting; rate = (1e-5, 2.6e-3)))
 
 Enables the decision module to alter suggested planner values, optimising the system
 state when possible. Used to set the `policies` of each [Municipality](@ref).
@@ -184,10 +184,8 @@ function scan(::Type{I}; kwargs...) where {I<:Intervention}
     return Dict{Type{<:Intervention},NamedTuple}(I => default_policy(I; kwargs...))
 end
 
-default_policy(::Type{Planting}; threshold = (5.0, 60.0), rate = (1e-3, 1e-2)) =
-    (threshold = threshold, rate = rate)
-default_policy(::Type{Trawling}; threshold = (40.0, 80.0), rate = (1e-4, 1e-2)) =
-    (threshold = threshold, rate = rate)
+default_policy(::Type{Planting}; rate = (1e-3, 1e-2)) = (rate = rate,)
+default_policy(::Type{Trawling}; rate = (1e-4, 1e-2)) = (rate = rate,)
 default_policy(::Type{Angling}; rate = (2.25e-3, 2.7e-3)) = (rate = rate,)
 
 """

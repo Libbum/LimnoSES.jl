@@ -14,9 +14,9 @@ version = "2.4.0"
 
 [[Agents]]
 deps = ["DataFrames", "Distributed", "LightGraphs", "LinearAlgebra", "Random", "SQLite", "StatsBase"]
-git-tree-sha1 = "b07d2c222d0a7f9fa1643fddf7f9ee0ed901fb6b"
+git-tree-sha1 = "9c43d1193ccd085671f43cab79fe6252915f21f8"
 uuid = "46ada45e-f475-11e8-01d0-f70cc89e6671"
-version = "3.3.1"
+version = "3.1.0"
 
 [[ArnoldiMethod]]
 deps = ["LinearAlgebra", "Random", "StaticArrays"]
@@ -64,9 +64,9 @@ version = "1.0.0"
 
 [[CategoricalArrays]]
 deps = ["DataAPI", "Future", "JSON", "Missings", "Printf", "Statistics", "StructTypes", "Unicode"]
-git-tree-sha1 = "2ac27f59196a68070e132b25713f9a5bbc5fa0d2"
+git-tree-sha1 = "5861101791fa76fafe8dddefd70ffbfe4e33ecae"
 uuid = "324d7699-5711-5eae-9e2f-1d82baa6b597"
-version = "0.8.3"
+version = "0.9.0"
 
 [[ChainRulesCore]]
 deps = ["MuladdMacro"]
@@ -98,6 +98,11 @@ git-tree-sha1 = "f0464e499ab9973b43c20f8216d088b61fda80c6"
 uuid = "adafc99b-e345-5852-983c-f28acb93d879"
 version = "0.2.2"
 
+[[Crayons]]
+git-tree-sha1 = "3f71217b538d7aaee0b69ab47d9b7724ca8afa0d"
+uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
+version = "4.0.4"
+
 [[DBInterface]]
 git-tree-sha1 = "f68d7ff82a2eba7265220d6f6a4ea61fe1e17f3a"
 uuid = "a10d1c49-ce27-4219-8d33-6db1a4562965"
@@ -109,10 +114,10 @@ uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.4.1"
 
 [[DataFrames]]
-deps = ["CategoricalArrays", "Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExtensions", "Missings", "PooledArrays", "Printf", "REPL", "Reexport", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "ecd850f3d2b815431104252575e7307256121548"
+deps = ["CategoricalArrays", "Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrettyTables", "Printf", "REPL", "Reexport", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
+git-tree-sha1 = "c5f9f2385a52e35c75efd90911091f8a749177a5"
 uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "0.21.8"
+version = "0.22.4"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
@@ -156,10 +161,10 @@ deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Distributions]]
-deps = ["FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns"]
-git-tree-sha1 = "9c41285c57c6e0d73a21ed4b65f6eec34805f937"
+deps = ["FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "StaticArrays", "Statistics", "StatsBase", "StatsFuns"]
+git-tree-sha1 = "501c11d708917ca09ce357bed163dbaf0f30229f"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.23.8"
+version = "0.23.12"
 
 [[DocStringExtensions]]
 deps = ["LibGit2", "Markdown", "Pkg", "Test"]
@@ -175,15 +180,21 @@ version = "1.8.0"
 
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays"]
-git-tree-sha1 = "4863cbb7910079369e258dee4add9d06ead5063a"
+git-tree-sha1 = "502b3de6039d5b78c76118423858d981349f3823"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.8.14"
+version = "0.9.7"
 
 [[FiniteDiff]]
 deps = ["ArrayInterface", "LinearAlgebra", "Requires", "SparseArrays", "StaticArrays"]
 git-tree-sha1 = "7f7216e0eb46c20ee8ddab5c8f9a262ed72587b6"
 uuid = "6a86dc24-6348-571c-b903-95158fe2bd41"
 version = "2.7.2"
+
+[[Formatting]]
+deps = ["Printf"]
+git-tree-sha1 = "8339d61043228fdd3eb658d86c926cb282ae72a8"
+uuid = "59287772-0a20-5a39-b81b-1366585eb4c0"
+version = "0.4.2"
 
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "NaNMath", "Random", "SpecialFunctions", "StaticArrays"]
@@ -353,6 +364,12 @@ deps = ["DataAPI"]
 git-tree-sha1 = "b1333d4eced1826e15adbdf01a4ecaccca9d353c"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
 version = "0.5.3"
+
+[[PrettyTables]]
+deps = ["Crayons", "Formatting", "Markdown", "Reexport", "Tables"]
+git-tree-sha1 = "42126c4e2677cdc664baea004c98cc60a664fe40"
+uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+version = "0.11.0"
 
 [[Printf]]
 deps = ["Unicode"]

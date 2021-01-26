@@ -15,8 +15,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 BlackBoxOptim = "0.5"
-Parameters = "0.12"
 DataFrames = "0.22"
+Parameters = "0.12"
 StatsBase = "0.33"
 
 [extras]

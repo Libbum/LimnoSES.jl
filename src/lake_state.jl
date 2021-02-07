@@ -27,8 +27,15 @@ function nutrient_load!(m::ABM, series::Dynamic)
 end
 
 function nutrient_load!(m::ABM, series::Noise)
+    if !isempty(series.process.S₁.data) && m.nutrient_stabilise == m.year
+        # Time to flip to stable
+        # TODO: Generalise this
+        # For now, the only time we need this is in a S2-T2 transition
+        m.nutrient_series = Noise(WienerProcess(m.year,m.lake.p.nutrients), 1.0, 2.5)
+        series = m.nutrient_series
+    end
     step_noise!(series, 1)
-    m.lake.p.nutrients = series.process.W[end]
+    m.lake.p.nutrients = series.process.curW
 end
 
 function step_noise!(noise::Noise, dt)
@@ -36,7 +43,7 @@ function step_noise!(noise::Noise, dt)
     N.dt = dt
     while true
         setup_next_step!(N, nothing, nothing)
-        if noise.min <= N.W[end] + N.dW <= noise.max
+        if noise.min <= N.curW + N.dW <= noise.max
             accept_step!(N, dt, nothing, nothing, false)
             break
         else

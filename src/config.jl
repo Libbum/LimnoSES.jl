@@ -185,6 +185,7 @@ end
     pike_expectation::Float64 = 1.4
     target_nutrients::Float64 = 0.7
     nutrient_series::NutrientSeries = Constant()
+    nutrient_stabilise::Int = 0 # Used in BrownianBridge noise processes
     nutrient_change::Float64 = 0.1
     critical_nutrients::Float64 = 3.0
     recycling_rate::Float64 = 0.1

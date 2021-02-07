@@ -271,7 +271,7 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
         ),
         SearchRange = search,
         MaxTime = MaxTime,
-        NThreads = max(Threads.nthreads() - 1, 1),
+#        NThreads = max(Threads.nthreads() - 1, 1),
         TraceMode = TraceMode,
     )
 

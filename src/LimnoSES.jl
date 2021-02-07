@@ -1,7 +1,7 @@
 module LimnoSES
 
 using Reexport
-@reexport using Agents, StatsBase
+@reexport using Agents, StatsBase, DiffEqNoiseProcess
 using BlackBoxOptim
 using DataFrames
 using Parameters

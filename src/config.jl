@@ -6,6 +6,7 @@ export Household,
     Nutrients,
     Constant,
     Dynamic,
+    Noise,
     TransientUp,
     TransientDown,
     Decision,
@@ -112,6 +113,20 @@ Nutrient runoff is managed by the municipality by incentivising households to up
 sewage systems that seep P into the lake.
 """
 struct Dynamic <: NutrientSeries end
+
+
+"""
+    Noise(distribution)
+
+Noise process given by DiffEqNoiseProcess.jl. For the moment this does not connect to
+the actual start time or `init_nutrients` value, so these must be manually duplicated
+here. Will be fixed in the future. `min` and `max` nutrient values can also be applied.
+"""
+@with_kw struct Noise <: NutrientSeries
+    process::NoiseProcess = WienerProcess(0.0, 1.0)
+    min::Float64 = 0.0
+    max::Float64 = 20.0
+end
 
 """
     TransientUp(;start_year = 11, post_target_series = Constant())

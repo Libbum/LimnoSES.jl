@@ -213,14 +213,22 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
     # each parameter
     apply_policies!(x, test)
 
-    Agents.step!(test, agent_step!, model_step!, test.policy.target)
+    if test.policy.opt_replicates > 0
+        results = Agents.Distributed.pmap(j -> calculate_objectives(deepcopy(test)), 1:test.policy.opt_replicates)
+        return Tuple(mean.(Iterators.zip(results...)))
+    else
+        return calculate_objectives(test)
+    end
+end
 
-#TODO: Replicates
-#    if m.nutrient_series.process isa Noise
+function calculate_objectives(test)
+    # For the moment, this is just a dump run, need to make it parallel.
+    if test.nutrient_series.process isa Noise
         # Don't assume we use the same seed
-        #Random.seed!(m.nutrient_series.process.rng,rand(UInt64))
- #   end
-    return map(o -> o[1](test), test.policy.objectives)
+        Random.seed!(test.nutrient_series.process.rng,rand(UInt64))
+    end
+    Agents.step!(test, agent_step!, model_step!, test.policy.target)
+    return map(o -> o(test), first.(test.policy.objectives))
 end
 
 """

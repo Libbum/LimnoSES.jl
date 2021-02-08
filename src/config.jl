@@ -123,7 +123,7 @@ the actual start time or `init_nutrients` value, so these must be manually dupli
 here. Will be fixed in the future. `min` and `max` nutrient values can also be applied.
 """
 @with_kw struct Noise <: NutrientSeries
-    process::NoiseProcess = WienerProcess(0.0, 1.0)
+    process::NoiseProcess = GeometricBrownianMotionProcess(0.0,0.05,0.0,2.0)
     min::Float64 = 0.0
     max::Float64 = 20.0
 end
@@ -188,6 +188,7 @@ here:
     max_time::Float64 = 300.0
     trace_mode::Symbol = :compact
     opt_threads::Int = 1 # Not currently in use
+    opt_replicates::Int = 0
 end
 
 # Properties of the experiment. For now this is a drop in for GUI values

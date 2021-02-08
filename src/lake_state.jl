@@ -31,7 +31,7 @@ function nutrient_load!(m::ABM, series::Noise)
         # Time to flip to stable
         # TODO: Generalise this
         # For now, the only time we need this is in a S2-T2 transition
-        m.nutrient_series = Noise(WienerProcess(m.year,m.lake.p.nutrients), 1.0, 2.5)
+        m.nutrient_series = Noise(GeometricBrownianMotionProcess(0.0, 0.05, m.year, m.lake.p.nutrients), 1.0, 2.5)
         series = m.nutrient_series
     end
     step_noise!(series, 1)

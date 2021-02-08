@@ -6,6 +6,7 @@ using BlackBoxOptim
 using DataFrames
 using Parameters
 import OrdinaryDiffEq
+import Random
 
 include("config.jl")
 
@@ -18,6 +19,7 @@ include("evolve.jl")
 include("reporting.jl")
 
 include("decisions.jl")
+include("replicates.jl")
 
 end # module
 

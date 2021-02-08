@@ -215,6 +215,11 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
 
     Agents.step!(test, agent_step!, model_step!, test.policy.target)
 
+#TODO: Replicates
+#    if m.nutrient_series.process isa Noise
+        # Don't assume we use the same seed
+        #Random.seed!(m.nutrient_series.process.rng,rand(UInt64))
+ #   end
     return map(o -> o[1](test), test.policy.objectives)
 end
 
@@ -223,17 +228,8 @@ end
 
 Runs the optimisation routine, calling on policy ranges set via [`policy`](@ref).
 Decisions are made only from the year of the call onwards.
-
-## Keywords
-
-A few keywords that can be sent to the `bboptimize` routine have been made available
-here:
-
-- `MaxTime = 300`, a hard time limit for the optimiser to run.
-- `TraceMode = :compact`, logging output control. Other options are `:silent` and
-`:verbose`.
 """
-function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
+function make_decision!(model::ABM)
     # Create our test model outside of the loop, it will therefore be cut down to
     # appropriate points already.
     test = create_test_model(model)
@@ -257,7 +253,7 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
     # No need to optimise if there are no more interventions
     isempty(search) && return nothing
 
-    if TraceMode != :silent
+    if model.policy.trace_mode != :silent
         word = model.year == model.policy.start ? "Starting" : "Adjusting"
         println("$(word) policy decisions in year $(model.year)")
     end
@@ -270,9 +266,9 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
             aggregator = f -> weightedfitness(f, w),
         ),
         SearchRange = search,
-        MaxTime = MaxTime,
-#        NThreads = max(Threads.nthreads() - 1, 1),
-        TraceMode = TraceMode,
+        MaxTime = model.policy.max_time,
+#        NThreads = model.policy.opt_threads,
+        TraceMode = model.policy.trace_mode,
     )
 
     x = best_candidate(result)

@@ -27,7 +27,7 @@ function nutrient_load!(m::ABM, series::Dynamic)
 end
 
 function nutrient_load!(m::ABM, series::Noise)
-    if !isempty(series.process.S₁.data) && m.nutrient_stabilise == m.year
+    if m.nutrient_stabilise == m.year && !isempty(series.process.S₁.data)
         # Time to flip to stable
         # TODO: Generalise this
         # For now, the only time we need this is in a S2-T2 transition

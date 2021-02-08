@@ -168,12 +168,26 @@ Synthetic nutrient profile that alters lake dynamics regardless of municipal man
         TransientUp(start_year = 0, post_target_series = Constant())
 end
 
+"""
+## Keywords
+
+A few keywords that can be sent to the `bboptimize` routine have been made available
+here:
+
+- `max_time = 300`, a hard time limit for the optimiser to run.
+- `trace_mode = :compact`, logging output control. Other options are `:silent` and
+`:verbose`.
+"""
 @with_kw mutable struct Decision
     start::Int = 1 # year when first optimisation is completed
     every::Int = 5 # year when next optimisation is completed (if target not met)
     current_term_only::Bool = true # If true, only optimise the next X years
     objectives::NTuple{N,Tuple{Function,Float64}} where {N} = ((min_time, 1.0),)
     target::Function = clear_state
+    # Optimiser settings
+    max_time::Float64 = 300.0
+    trace_mode::Symbol = :compact
+    opt_threads::Int = 1 # Not currently in use
 end
 
 # Properties of the experiment. For now this is a drop in for GUI values

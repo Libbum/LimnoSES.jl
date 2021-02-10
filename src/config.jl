@@ -116,7 +116,7 @@ struct Dynamic <: NutrientSeries end
 
 
 """
-    Noise(distribution)
+    Noise(process, min, max)
 
 Noise process given by DiffEqNoiseProcess.jl. For the moment this does not connect to
 the actual start time or `init_nutrients` value, so these must be manually duplicated

@@ -187,7 +187,6 @@ here:
     # Optimiser settings
     max_time::Float64 = 300.0
     trace_mode::Symbol = :compact
-    opt_threads::Int = 1 # Not currently in use
     opt_replicates::Int = 0
     opt_pool::Agents.Distributed.WorkerPool = Agents.Distributed.default_worker_pool()
 end

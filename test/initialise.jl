@@ -9,6 +9,7 @@
         :max_sewage_water,
         :nutrient_change,
         :nutrient_series,
+        :nutrient_stabilise,
         :outcomes_upgraded_households_sum,
         :outcomes_year_of_full_upgrade,
         :outcomes_year_when_desired_level_is_back,
@@ -23,10 +24,29 @@
         :year,
     ]
 
-    @test sort(collect(keys(LimnoSES.type2dict(model.policy)))) ==
-          [:current_term_only, :every, :objectives, :start, :target]
-    @test sort(collect(keys(LimnoSES.type2dict(model.policy; prefix = "x")))) ==
-          [:x_current_term_only, :x_every, :x_objectives, :x_start, :x_target]
+    @test sort(collect(keys(LimnoSES.type2dict(model.policy)))) == [
+        :current_term_only,
+        :every,
+        :max_time,
+        :objectives,
+        :opt_pool,
+        :opt_replicates,
+        :start,
+        :target,
+        :trace_mode,
+    ]
+
+    @test sort(collect(keys(LimnoSES.type2dict(model.policy; prefix = "x")))) == [
+        :x_current_term_only,
+        :x_every,
+        :x_max_time,
+        :x_objectives,
+        :x_opt_pool,
+        :x_opt_replicates,
+        :x_start,
+        :x_target,
+        :x_trace_mode,
+    ]
 
     @testset "plan" begin
         schedule = plan(Angling)

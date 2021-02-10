@@ -189,6 +189,7 @@ here:
     trace_mode::Symbol = :compact
     opt_threads::Int = 1 # Not currently in use
     opt_replicates::Int = 0
+    opt_pool::Agents.Distributed.WorkerPool = Agents.Distributed.default_worker_pool()
 end
 
 # Properties of the experiment. For now this is a drop in for GUI values
@@ -223,9 +224,11 @@ end
 struct WastewaterTreatment <: Intervention end
 @with_kw_noshow mutable struct Planting <: Intervention
     rate::Float64 = 1e-4
+    cost::Float64 = 1.0 # Cost is given here as a ratio. Defualt is 1:1.
 end
 @with_kw_noshow mutable struct Trawling <: Intervention
     rate::Float64 = 5e-4
+    cost::Float64 = 1.0
 end
 @with_kw_noshow mutable struct Angling <: Intervention
     rate::Float64 = 2.25e-4 # 10% of default rate

@@ -28,6 +28,11 @@ function initialise(;
         :init_nutrients => lake_parameters.nutrients,
         :init_pike_mortality => lake_parameters.mp,
     )
+    if properties[:nutrient_series] isa Noise && !isempty(properties[:nutrient_series].process.S₁.data)
+        # Store the year in which the nutrient_series must transition to stable in the
+        # event of a brownian bridge
+        properties[:nutrient_stabilise] = Int(properties[:nutrient_series].process.S₁.data[1][1])+1
+    end
     model = ABM(
         Union{Household,Municipality},
         space;

@@ -20,6 +20,7 @@ Constant
 Dynamic
 TransientUp
 TransientDown
+Noise
 ```
 
 

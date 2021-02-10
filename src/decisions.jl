@@ -1,4 +1,5 @@
-export min_time, min_acceleration, min_cost, clear_state, managed_clear_eutrophic, make_decision!
+export min_time,
+    min_acceleration, min_cost, clear_state, managed_clear_eutrophic, make_decision!
 
 ##############################################################
 # Predefined objective functions
@@ -38,20 +39,17 @@ function min_cost(model::ABM)
     # This decision is only for however much needs to be done in the future.
 
     # Our budget is not pinned to money directly, but there is an assumed cost based on years to implement at the given rate.
-    # This should probably be weighted in the future, since different interventions most likely cost more than others.
     budget = 0.0
 
     # Get all Trawling and Planting actions. We assume there is no municipal cost for WastewaterTreatment -> that cost is shifted to the Household for now
     # We also assume no (monetary) cost for Angling, which neglects revenue raised by licensing for the moment.
     for municipality in municipalities(model)
         interventions = vcat(values(municipality.interventions)...)
-        # This could be done in one go, but is separated so we can implement weights later.
         plant = Iterators.filter(i -> i isa Planting, interventions)
         trawl = Iterators.filter(i -> i isa Trawling, interventions)
 
-        # 1.0 is where the future weight should be assigned
-        isempty(plant) || (budget += sum(p -> p.rate, plant) * 1.0)
-        isempty(trawl) || (budget += sum(t -> t.rate, trawl) * 1.0)
+        isempty(plant) || (budget += sum(p -> p.rate * p.cost, plant))
+        isempty(trawl) || (budget += sum(t -> t.rate * t.cost, trawl))
     end
     # Above assumes weighting is different for municipalities. If that ends up not to be the case, we can grab all active interventions regardless of municipality with
     # `interventions = merge(vcat, (m.interventions for m in municipalities(model))...)`
@@ -213,9 +211,25 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
     # each parameter
     apply_policies!(x, test)
 
-    Agents.step!(test, agent_step!, model_step!, test.policy.target)
+    if test.policy.opt_replicates > 0
+        results = Agents.Distributed.pmap(
+            j -> calculate_objectives(deepcopy(test)),
+            test.policy.opt_pool,
+            1:test.policy.opt_replicates,
+        )
+        return Tuple(mean.(Iterators.zip(results...)))
+    else
+        return calculate_objectives(test)
+    end
+end
 
-    return map(o -> o[1](test), test.policy.objectives)
+function calculate_objectives(test)
+    if test.nutrient_series isa Noise
+        # Don't assume we use the same seed
+        Random.seed!(test.nutrient_series.process.rng, rand(UInt64))
+    end
+    Agents.step!(test, agent_step!, model_step!, test.policy.target)
+    return map(o -> o(test), first.(test.policy.objectives))
 end
 
 """
@@ -223,17 +237,8 @@ end
 
 Runs the optimisation routine, calling on policy ranges set via [`policy`](@ref).
 Decisions are made only from the year of the call onwards.
-
-## Keywords
-
-A few keywords that can be sent to the `bboptimize` routine have been made available
-here:
-
-- `MaxTime = 300`, a hard time limit for the optimiser to run.
-- `TraceMode = :compact`, logging output control. Other options are `:silent` and
-`:verbose`.
 """
-function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
+function make_decision!(model::ABM)
     # Create our test model outside of the loop, it will therefore be cut down to
     # appropriate points already.
     test = create_test_model(model)
@@ -257,7 +262,7 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
     # No need to optimise if there are no more interventions
     isempty(search) && return nothing
 
-    if TraceMode != :silent
+    if model.policy.trace_mode != :silent
         word = model.year == model.policy.start ? "Starting" : "Adjusting"
         println("$(word) policy decisions in year $(model.year)")
     end
@@ -270,9 +275,8 @@ function make_decision!(model::ABM; MaxTime = 300, TraceMode = :compact)
             aggregator = f -> weightedfitness(f, w),
         ),
         SearchRange = search,
-        MaxTime = MaxTime,
-        NThreads = max(Threads.nthreads() - 1, 1),
-        TraceMode = TraceMode,
+        MaxTime = model.policy.max_time,
+        TraceMode = model.policy.trace_mode,
     )
 
     x = best_candidate(result)

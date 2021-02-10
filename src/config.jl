@@ -6,6 +6,7 @@ export Household,
     Nutrients,
     Constant,
     Dynamic,
+    Noise,
     TransientUp,
     TransientDown,
     Decision,
@@ -113,6 +114,20 @@ sewage systems that seep P into the lake.
 """
 struct Dynamic <: NutrientSeries end
 
+
+"""
+    Noise(process, min, max)
+
+Noise process given by DiffEqNoiseProcess.jl. For the moment this does not connect to
+the actual start time or `init_nutrients` value, so these must be manually duplicated
+here. Will be fixed in the future. `min` and `max` nutrient values can also be applied.
+"""
+@with_kw struct Noise <: NutrientSeries
+    process::NoiseProcess = GeometricBrownianMotionProcess(0.0,0.05,0.0,2.0)
+    min::Float64 = 0.0
+    max::Float64 = 20.0
+end
+
 """
     TransientUp(;start_year = 11, post_target_series = Constant())
 
@@ -153,12 +168,27 @@ Synthetic nutrient profile that alters lake dynamics regardless of municipal man
         TransientUp(start_year = 0, post_target_series = Constant())
 end
 
+"""
+## Keywords
+
+A few keywords that can be sent to the `bboptimize` routine have been made available
+here:
+
+- `max_time = 300`, a hard time limit for the optimiser to run.
+- `trace_mode = :compact`, logging output control. Other options are `:silent` and
+`:verbose`.
+"""
 @with_kw mutable struct Decision
     start::Int = 1 # year when first optimisation is completed
     every::Int = 5 # year when next optimisation is completed (if target not met)
     current_term_only::Bool = true # If true, only optimise the next X years
     objectives::NTuple{N,Tuple{Function,Float64}} where {N} = ((min_time, 1.0),)
     target::Function = clear_state
+    # Optimiser settings
+    max_time::Float64 = 300.0
+    trace_mode::Symbol = :compact
+    opt_replicates::Int = 0
+    opt_pool::Agents.Distributed.WorkerPool = Agents.Distributed.default_worker_pool()
 end
 
 # Properties of the experiment. For now this is a drop in for GUI values
@@ -170,6 +200,7 @@ end
     pike_expectation::Float64 = 1.4
     target_nutrients::Float64 = 0.7
     nutrient_series::NutrientSeries = Constant()
+    nutrient_stabilise::Int = 0 # Used in BrownianBridge noise processes
     nutrient_change::Float64 = 0.1
     critical_nutrients::Float64 = 3.0
     recycling_rate::Float64 = 0.1
@@ -192,9 +223,11 @@ end
 struct WastewaterTreatment <: Intervention end
 @with_kw_noshow mutable struct Planting <: Intervention
     rate::Float64 = 1e-4
+    cost::Float64 = 1.0 # Cost is given here as a ratio. Defualt is 1:1.
 end
 @with_kw_noshow mutable struct Trawling <: Intervention
     rate::Float64 = 5e-4
+    cost::Float64 = 1.0
 end
 @with_kw_noshow mutable struct Angling <: Intervention
     rate::Float64 = 2.25e-4 # 10% of default rate

@@ -31,8 +31,12 @@ min_acceleration(model::ABM) = sum(abs.(model.lake.sol(0:12:(365*model.year), Va
 Objective function that returns a "cost" of future `Planting` and `Trawling`
 interventions, which ultimately is just a sum of all proposed rates.
 
-In future it will be possible to apply a weight to each of the interventions as one is
-most likely more costly than the other.
+!!! note
+
+    When using `nutrient_series = Noise(...)` and only the `min_cost` objective,
+    `opt_replicates` *must* be large (`≳ 10`), since the noise process may cause the
+    optimiser to identify a solution in theory but fail in practice. The solution to
+    failing meet the target scenario in this case is increase `opt_replicates` and retry.
 """
 function min_cost(model::ABM)
     # By the time we get here, we're looking at interventions still to do (some may have already been completed, but they have already been budgeted.
@@ -72,13 +76,6 @@ Calculated via instantaneous comparisons at latest model time of all lake variab
 an additional check to verify a near-zero first derivative.
 
 **NOTE:** This target is hard coded to the default `Martin` parameters.
-
-!!! note
-
-    When using `nutrient_series = Noise(...)` and only the `min_cost` objective,
-    `opt_replicates` *must* be large (`≳ 10`), since the noise process may cause the
-    optimiser to identify a solution in theory but fail in practice. The solution to
-    failing meet the target scenario in this case is increase `opt_replicates` and retry.
 """
 function clear_state(model, s)
     s >= 100 && return true # Escape if we dont converge after 100 years

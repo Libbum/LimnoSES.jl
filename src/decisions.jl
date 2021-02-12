@@ -72,19 +72,32 @@ Calculated via instantaneous comparisons at latest model time of all lake variab
 an additional check to verify a near-zero first derivative.
 
 **NOTE:** This target is hard coded to the default `Martin` parameters.
+
+!!! note
+
+    When using `nutrient_series = Noise(...)` and only the `min_cost` objective,
+    `opt_replicates` *must* be large (`≳ 10`), since the noise process may cause the
+    optimiser to identify a solution in theory but fail in practice. The solution to
+    failing meet the target scenario in this case is increase `opt_replicates` and retry.
 """
 function clear_state(model, s)
-    model.year == 100 && return true # Escape if we dont converge after 100 years
+    s >= 100 && return true # Escape if we dont converge after 100 years
 
     B, P, V = model.lake.u
 
     # Based on bifurcation analysis: for a clear state, we need
     # V >= 33.4, B < 31.6 and if n > 1 then P > 0.5
     # We also want the system to stabilise a bit, so we wait until the derivatives calm down too.
+    # That cutoff can be a complication with noisy nutrients, so we relax the criteria in that case.
+    if model.nutrient_series isa Noise && hasfield(typeof(model.nutrient_series.process.dist),:σ)
+        cutoff = model.nutrient_series.process.dist.σ
+    else
+        cutoff = 5e-4
+    end
     B < 31.6 &&
     V >= 33.4 &&
     (model.lake.p.nutrients > 1.0 ? P > 0.5 : true) &&
-    sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < 5e-4
+    sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < cutoff
 end
 
 """
@@ -96,7 +109,7 @@ pike population. Will stop at 100 years if not successful.
 **Note:** For the moment this targets the region of T3, not the explicit starting point.
 """
 function managed_clear_eutrophic(model, s)
-    model.year == 100 && return true # Escape if we dont converge after 100 years
+    s >= 100 && return true # Escape if we dont converge after 100 years
 
     B, P, V = model.lake.u
 
@@ -229,7 +242,15 @@ function calculate_objectives(test)
         Random.seed!(test.nutrient_series.process.rng, rand(UInt64))
     end
     Agents.step!(test, agent_step!, model_step!, test.policy.target)
-    return map(o -> o(test), first.(test.policy.objectives))
+
+    objectives = first.(test.policy.objectives)
+    if test.policy.target(test, 1)
+        return map(o -> o(test), objectives)
+    else
+        # Dramatically penalise this result, as it failed to
+        # reach the target before cutoff.
+        return Tuple(fill(1e3, length(objectives)))
+    end
 end
 
 """

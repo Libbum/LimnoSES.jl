@@ -40,8 +40,7 @@ function assets(model)
     return [nutrients, plant_rate, trawl_rate]
 end
 
-_, data =
-    run!(model, agent_step!, model_step!, 100; mdata = [nutrients, plant_rate, trawl_rate])
+_, data = run!(model, agent_step!, model_step!, 100; mdata = assets(model))
 
 using Plots
 

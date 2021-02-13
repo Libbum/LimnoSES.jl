@@ -1,5 +1,10 @@
 export min_time,
-    min_acceleration, min_cost, clear_state, managed_clear_eutrophic, make_decision!
+    appropriate_vegetation,
+    min_acceleration,
+    min_cost,
+    clear_state,
+    managed_clear_eutrophic,
+    make_decision!
 
 ##############################################################
 # Predefined objective functions
@@ -62,6 +67,23 @@ function min_cost(model::ABM)
     return budget
 end
 
+"""
+    appropriate_vegetation(model)
+
+Objective function that returns a penalty if vegetation is outside an operational
+density range of [35, 60]. Densities lower than this value cannot sustain a clear state,
+whilst higher densities cause recreational issues that are considered unacceptable.
+"""
+function appropriate_vegetation(model::ABM)
+    vegetation = model.lake.sol(0:12:(365*model.year))
+    over = filter(v -> v > 60.0, veg)
+    over .-= 60.0
+    under = filter(v -> v < 35.0, veg)
+    # Transform the under values to be on the same footing
+    under = (35.0 .- under)
+    return sum(vcat(over, under))
+end
+
 ##############################################################
 # Predefined target functions
 ##############################################################
@@ -86,7 +108,8 @@ function clear_state(model, s)
     # V >= 33.4, B < 31.6 and if n > 1 then P > 0.5
     # We also want the system to stabilise a bit, so we wait until the derivatives calm down too.
     # That cutoff can be a complication with noisy nutrients, so we relax the criteria in that case.
-    if model.nutrient_series isa Noise && hasfield(typeof(model.nutrient_series.process.dist),:σ)
+    if model.nutrient_series isa Noise &&
+       hasfield(typeof(model.nutrient_series.process.dist), :σ)
         cutoff = model.nutrient_series.process.dist.σ
     else
         cutoff = 5e-4

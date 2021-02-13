@@ -63,5 +63,6 @@ Pre-defined values:
 LimnoSES.min_time
 LimnoSES.min_acceleration
 LimnoSES.min_cost
+LimnoSES.appropreate_vegetation
 ```
 

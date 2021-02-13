@@ -28,7 +28,7 @@ with monthly increments.
 
 Helps to mitigate large spikes in transitions.
 """
-min_acceleration(model::ABM) = sum(abs.(model.lake.sol(0:12:(365*model.year), Val{2})))
+min_acceleration(model::ABM) = sum(abs.(model.lake.sol(model.lake.sol.t, Val{2})))
 
 """
     min_cost(model)

@@ -70,18 +70,20 @@ end
 """
     appropriate_vegetation(model)
 
-Objective function that returns a penalty if vegetation is outside an operational
-density range of [35, 60]. Densities lower than this value cannot sustain a clear state,
-whilst higher densities cause recreational issues that are considered unacceptable.
+Objective function that returns a penalty if vegetation is higher than an operational
+density of 60. Higher densities cause recreational issues that are considered
+unacceptable.
+
+!!! note
+
+    Time horizon is important for this method. It is recommended to set
+    `model.policy.current_term_only = false` or have a large `model.policy.every`.
 """
 function appropriate_vegetation(model::ABM)
-    vegetation = model.lake.sol(0:12:(365*model.year))[3,:]
+    vegetation = model.lake.sol[3,:]
     over = filter(v -> v > 60.0, vegetation)
     over .-= 60.0
-    under = filter(v -> v < 35.0, vegetation)
-    # Transform the under values to be on the same footing
-    under = (35.0 .- under)
-    return sum(vcat(over, under))
+    return sum(over)
 end
 
 ##############################################################

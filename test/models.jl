@@ -38,7 +38,7 @@
         @test LimnoSES.preset_conditions(S3, Martin) == (3.5, [20.0, 3.5, 50.0])
         @test LimnoSES.preset_conditions(T1, Martin) == (0.9, [21.647, 2.050, 53.726])
         @test LimnoSES.preset_conditions(T2, Martin) == (2.0, [26.901, 2.809, 41.530])
-        @test LimnoSES.preset_conditions(T3, Martin) == (3.0, [20.0, 3.5, 50.0])
+        @test LimnoSES.preset_conditions(T3, Martin) == (3.5, [20.0, 3.5, 50.0])
 
         @test sprint(show, "text/plain", lp) ==
               "Parameters for lake dynamics (Martin) model):\nNutrient level: 0.9\nImmigration rate (g⋅m⁻²⋅day⁻¹) for bream: 2.0e-5, pike: 2.0e-5\nGrowth rate (day⁻¹) for bream: 0.0075, Predation rate (day⁻¹) of pike: 0.05\nHalf sturation constants: H₁ 0.5, H₂ 11.0%, H₃ 20.0 g⋅m⁻², H₄ 15.0 g⋅m⁻²\nIntraspecific competition constant (g⋅m⁻²⋅day⁻¹) for bream: 7.5e-5, pike: 0.000275\nPike food conversion efficiency to growth: 0.1, Mortalitiy rate (day⁻¹): 0.00225\nVegetation rates. Growth: 0.007 day⁻¹, mortality: 0.007 day⁻¹, competition: 6.0e-5 m²\n"

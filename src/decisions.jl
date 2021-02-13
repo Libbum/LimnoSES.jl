@@ -75,7 +75,7 @@ density range of [35, 60]. Densities lower than this value cannot sustain a clea
 whilst higher densities cause recreational issues that are considered unacceptable.
 """
 function appropriate_vegetation(model::ABM)
-    vegetation = model.lake.sol(0:12:(365*model.year))
+    vegetation = model.lake.sol(0:12:(365*model.year))[3,:]
     over = filter(v -> v > 60.0, vegetation)
     over .-= 60.0
     under = filter(v -> v < 35.0, vegetation)

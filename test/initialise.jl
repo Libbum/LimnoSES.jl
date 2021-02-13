@@ -119,14 +119,14 @@
         @test_throws AssertionError planner(plan(Angling), plan(Angling, 7))
     end
     @testset "scan" begin
-        default_planting = (rate = (0.001, 0.01),)
+        default_planting = (rate = (0.0, 0.01),)
         @test scan(Planting) == Dict(Planting => default_planting)
         @test LimnoSES.default_policy(Planting) == default_planting
-        @test scan(Planting; rate = (0.0, 1.0)) == Dict(Planting => (rate = (0.0, 1.0),))
-        default_trawling = (rate = (0.0001, 0.01),)
+        @test scan(Planting; rate = (0.01, 1.0)) == Dict(Planting => (rate = (0.01, 1.0),))
+        default_trawling = (rate = (0.0, 0.01),)
         @test scan(Trawling) == Dict(Trawling => default_trawling)
         @test LimnoSES.default_policy(Trawling) == default_trawling
-        @test scan(Trawling; rate = (0.0, 1.0)) == Dict(Trawling => (rate = (0.0, 1.0),))
+        @test scan(Trawling; rate = (0.001, 1.0)) == Dict(Trawling => (rate = (0.001, 1.0),))
         default_angling = (rate = (2.25e-3, 2.7e-3),)
         @test scan(Angling) == Dict(Angling => default_angling)
         @test LimnoSES.default_policy(Angling) == default_angling

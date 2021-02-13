@@ -189,8 +189,8 @@ function scan(::Type{I}; kwargs...) where {I<:Intervention}
     return Dict{Type{<:Intervention},NamedTuple}(I => default_policy(I; kwargs...))
 end
 
-default_policy(::Type{Planting}; rate = (1e-3, 1e-2)) = (rate = rate,)
-default_policy(::Type{Trawling}; rate = (1e-4, 1e-2)) = (rate = rate,)
+default_policy(::Type{Planting}; rate = (0.0, 1e-2)) = (rate = rate,)
+default_policy(::Type{Trawling}; rate = (0.0, 1e-2)) = (rate = rate,)
 default_policy(::Type{Angling}; rate = (2.25e-3, 2.7e-3)) = (rate = rate,)
 
 """

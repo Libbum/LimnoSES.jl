@@ -24,7 +24,6 @@ model = initialise(;
     municipalities = Dict(
         "main" => (
             Governance(
-                houseowner_type = Introverted(),
                 interventions = planner(plan(Planting, 1:20), plan(Trawling, 1:20)),
                 policies = policy(scan(Planting), scan(Trawling)),
             ),
@@ -89,7 +88,6 @@ end
     municipalities = Dict(
         "main" => (
             Governance(
-                houseowner_type = Introverted(),
                 interventions = planner(plan(Planting, 1:20)),
                 policies = policy(scan(Planting)),
             ),
@@ -112,7 +110,7 @@ reps = 10
 years = 100
 _, data = replicates(model, agent_step!, model_step!, years, reps; mdata = assets(model))
 
-using Plots, Statistics
+using Plots, Statistics, DataFrames
 
 discrete = LimnoSES.OrdinaryDiffEq.VectorOfArray([
     cat(
@@ -120,7 +118,7 @@ discrete = LimnoSES.OrdinaryDiffEq.VectorOfArray([
             d.u
             for
             d in
-            LimnoSES.DataFrames.filter(
+            DataFrames.filter(
                 [:replicate, :step] => (r, s) -> r == i && s != 0,
                 data,
             ).discrete

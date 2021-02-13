@@ -76,9 +76,9 @@ whilst higher densities cause recreational issues that are considered unacceptab
 """
 function appropriate_vegetation(model::ABM)
     vegetation = model.lake.sol(0:12:(365*model.year))
-    over = filter(v -> v > 60.0, veg)
+    over = filter(v -> v > 60.0, vegetation)
     over .-= 60.0
-    under = filter(v -> v < 35.0, veg)
+    under = filter(v -> v < 35.0, vegetation)
     # Transform the under values to be on the same footing
     under = (35.0 .- under)
     return sum(vcat(over, under))

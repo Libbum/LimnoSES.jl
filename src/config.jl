@@ -178,12 +178,12 @@ here:
 - `trace_mode = :compact`, logging output control. Other options are `:silent` and
 `:verbose`.
 """
-@with_kw mutable struct Decision
+@with_kw mutable struct Decision{F<:Function}
     start::Int = 1 # year when first optimisation is completed
     every::Int = 5 # year when next optimisation is completed (if target not met)
     current_term_only::Bool = true # If true, only optimise the next X years
     objectives::NTuple{N,Tuple{Function,Float64}} where {N} = ((min_time, 1.0),)
-    target::Function = clear_state
+    target::F = clear_state
     # Optimiser settings
     max_time::Float64 = 300.0
     trace_mode::Symbol = :compact

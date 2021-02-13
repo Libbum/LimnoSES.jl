@@ -310,5 +310,5 @@ end
 
 Handle objective weights. Should be used as an `aggregator` in `bboptimize`.
 """
-weightedfitness(f, w) = sum(map((fi, wi) -> fi * wi, f, w))
+weightedfitness(f, w) = sum(f .+ w)
 

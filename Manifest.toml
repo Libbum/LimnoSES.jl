@@ -46,8 +46,10 @@ version = "1.0.0"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BlackBoxOptim]]
-deps = ["CPUTime", "Compat", "Distributed", "Distributions", "LinearAlgebra", "Printf", "Random", "SpatialIndexing", "StatsBase"]
-git-tree-sha1 = "da5cfcc08d24a43fa4e3ad67f565f17838e26fca"
+deps = ["CPUTime", "Compat", "Distributed", "Distributions", "HTTP", "JSON", "LinearAlgebra", "Printf", "Random", "SpatialIndexing", "StatsBase"]
+git-tree-sha1 = "3dbf8ec7fba36211c1a6b7f27d777fd4f9ee2ba2"
+repo-rev = "clamp_e_index"
+repo-url = "https://github.com/Libbum/BlackBoxOptim.jl.git"
 uuid = "a134a8b2-14d6-55f6-9291-3336d3ab0209"
 version = "0.5.0"
 

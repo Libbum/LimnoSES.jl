@@ -79,12 +79,7 @@ unacceptable.
     Time horizon is important for this method. It is recommended to set
     `model.policy.current_term_only = false` or have a large `model.policy.every`.
 """
-function appropriate_vegetation(model::ABM)
-    vegetation = model.lake.sol[3,:]
-    over = filter(v -> v > 60.0, vegetation)
-    over .-= 60.0
-    return sum(over)
-end
+appropriate_vegetation(model::ABM) = sum(model.lake.sol[3,:] .> 60.0)
 
 ##############################################################
 # Predefined target functions

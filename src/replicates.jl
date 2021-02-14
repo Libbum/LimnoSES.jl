@@ -39,8 +39,8 @@ function replicates(model::ABM, agent_step!, model_step!, n, replicates; kwargs.
         1:replicates,
     )
 
-    df_agent = DataFrame()
-    df_model = DataFrame()
+    df_agent = Agents.DataFrame()
+    df_model = Agents.DataFrame()
     for (rep, d) in enumerate(all_data)
         Agents.replicate_col!(d[1], rep)
         Agents.replicate_col!(d[2], rep)

@@ -268,7 +268,7 @@ function calculate_objectives(test)
     else
         # Dramatically penalise this result, as it failed to
         # reach the target before cutoff.
-        return map(o -> o(test)+1e2, objectives)
+        return map(o -> o(test)*1e2, objectives)
     end
 end
 

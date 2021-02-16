@@ -34,13 +34,13 @@ function nutrient_load!(m::ABM, series::Noise)
         m.nutrient_series = Noise(GeometricBrownianMotionProcess(0.0, 0.05, m.year, m.lake.p.nutrients), 1.0, 2.5)
         series = m.nutrient_series
     end
-    step_noise!(series)
+    step_noise!(series, 1.0)
     m.lake.p.nutrients = series.process.curW
 end
 
-function step_noise!(noise::Noise)
+function step_noise!(noise::Noise, dt)
     N = noise.process
-    N.dt = 1.0 # Per year
+    N.dt = dt # Per year
     current = N.curW
     failure = 0
     while failure <= 1000

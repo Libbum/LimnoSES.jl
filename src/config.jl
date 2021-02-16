@@ -121,6 +121,14 @@ struct Dynamic <: NutrientSeries end
 Noise process given by DiffEqNoiseProcess.jl. For the moment this does not connect to
 the actual start time or `init_nutrients` value, so these must be manually duplicated
 here. Will be fixed in the future. `min` and `max` nutrient values can also be applied.
+
+!!! warning
+
+    Care must be taken to verify that bounded processes are possible over certain time
+    horizons. This is noticably the case with brownian bridges. If your σ is small such
+    that the gap between your current position and the end position cannot be met within
+    the timeframe specified, the solver will error. Unfortunately this cannot be handled
+    in a softer manner.
 """
 @with_kw struct Noise <: NutrientSeries
     process::NoiseProcess = GeometricBrownianMotionProcess(0.0,0.05,0.0,2.0)
@@ -200,7 +208,6 @@ end
     pike_expectation::Float64 = 1.4
     target_nutrients::Float64 = 0.7
     nutrient_series::NutrientSeries = Constant()
-    nutrient_stabilise::Int = 0 # Used in BrownianBridge noise processes
     nutrient_change::Float64 = 0.1
     critical_nutrients::Float64 = 3.0
     recycling_rate::Float64 = 0.1

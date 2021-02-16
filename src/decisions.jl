@@ -231,6 +231,9 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
     prob = OrdinaryDiffEq.ODEProblem(lake_dynamics!, u0, (0.0, Inf), p)
 
     test.lake = OrdinaryDiffEq.init(prob, OrdinaryDiffEq.Tsit5())
+    if haskey(test.properties, :nutrient_stabilise)
+        test.nutrient_stabilise -= test.year
+    end
     test.year = 0
     test.init_nutrients = p.nutrients
     test.init_pike_mortality = p.mp
@@ -259,14 +262,13 @@ function calculate_objectives(test)
         Random.seed!(test.nutrient_series.process.rng, rand(UInt64))
     end
     Agents.step!(test, agent_step!, model_step!, test.policy.target)
-
     objectives = first.(test.policy.objectives)
     if test.policy.target(test, 1)
         return map(o -> o(test), objectives)
     else
         # Dramatically penalise this result, as it failed to
         # reach the target before cutoff.
-        return Tuple(fill(1e3, length(objectives)))
+        return map(o -> o(test)+1e2, objectives)
     end
 end
 

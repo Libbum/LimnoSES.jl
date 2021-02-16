@@ -27,29 +27,36 @@ function nutrient_load!(m::ABM, series::Dynamic)
 end
 
 function nutrient_load!(m::ABM, series::Noise)
-    if m.nutrient_stabilise == m.year && !isempty(series.process.S₁.data)
+    if haskey(m.properties, :nutrient_stabilise) && m.nutrient_stabilise == m.year && !isempty(series.process.S₁.data)
         # Time to flip to stable
         # TODO: Generalise this
         # For now, the only time we need this is in a S2-T2 transition
         m.nutrient_series = Noise(GeometricBrownianMotionProcess(0.0, 0.05, m.year, m.lake.p.nutrients), 1.0, 2.5)
         series = m.nutrient_series
     end
-    step_noise!(series, 1)
+    step_noise!(series)
     m.lake.p.nutrients = series.process.curW
 end
 
-function step_noise!(noise::Noise, dt)
+function step_noise!(noise::Noise)
     N = noise.process
-    N.dt = dt
-    while true
+    N.dt = 1.0 # Per year
+    current = N.curW
+    failure = 0
+    while failure <= 1000
         setup_next_step!(N, nothing, nothing)
-        if noise.min <= N.curW + N.dW <= noise.max
+        if noise.min <= current + N.dW <= noise.max
             accept_step!(N, dt, nothing, nothing, false)
             break
         else
             reject_step!(N, dt, nothing, nothing)
+            failure += 1
         end
     end
+    if failure == 1000
+        error("Failed to step nutrient noise. Attempt to decrease range, increase σ, or increase time for bridges.")
+    end
+    return nothing
 end
 
 function nutrient_load!(m::ABM, series::TransientUp)

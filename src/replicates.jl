@@ -25,10 +25,9 @@ function replicates(model::ABM, agent_step!, model_step!, n, replicates; kwargs.
             model.policy.opt_pool =
                 Agents.Distributed.WorkerPool(Agents.Distributed.workers()[replicates+1:end])
         else
-            # steal as much as possible
-            pool = Agents.Distributed.WorkerPool(Agents.Distributed.workers()[1:end-1])
-            model.policy.opt_pool =
-                Agents.Distributed.WorkerPool([Agents.Distributed.workers()[end]])
+            # steal everything
+            pool = Agents.Distributed.WorkerPool(Agents.Distributed.workers())
+            model.policy.opt_pool = Agents.Distributed.WorkerPool()
         end
     else
         # We can run on the optimisers pool, since it doesn't need it.

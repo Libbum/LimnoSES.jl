@@ -14,6 +14,7 @@ function replicates(model::ABM, agent_step!, model_step!, n, replicates; kwargs.
 
     # Generally, it will be better to solve world replicates in paralell since they have a longer spool time.
     # So we steal from the opt_pool as much as possible. It needs to have at least one worker though otherwise it'll block (I think).
+    println("Separating $(length(model.policy.opt_pool)) workers into pools..")
     if model.policy.opt_replicates > 0
         # Let optimiser know to run from a partial pool
         # Generally, it will be better to solve world replicates in paralell since they have a longer spool time.
@@ -33,6 +34,7 @@ function replicates(model::ABM, agent_step!, model_step!, n, replicates; kwargs.
         # We can run on the optimisers pool, since it doesn't need it.
         pool = model.policy.opt_pool
     end
+    println("Using $(length(pool)) on replicates, $(length(model.policy.opt_pool)) on optimiser throws.")
     all_data = Agents.Distributed.pmap(
         j -> Agents._run!(seeded(model), agent_step!, model_step!, n; kwargs...),
         pool,

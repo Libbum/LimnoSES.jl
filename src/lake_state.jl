@@ -34,11 +34,11 @@ function nutrient_load!(m::ABM, series::Noise)
         m.nutrient_series = Noise(GeometricBrownianMotionProcess(0.0, 0.05, m.year, m.lake.p.nutrients), 1.0, 2.5)
         series = m.nutrient_series
     end
-    step_noise!(series, 1.0)
+    step_noise!(series, 1.0, model)
     m.lake.p.nutrients = series.process.curW
 end
 
-function step_noise!(noise::Noise, dt)
+function step_noise!(noise::Noise, dt, model)
     N = noise.process
     N.dt = dt # Per year
     current = N.curW
@@ -54,6 +54,9 @@ function step_noise!(noise::Noise, dt)
         end
     end
     if failure == 1000
+        println("Debug. Test: $(haskey(model.properties, :test)), Year: $(model.year)")
+        println("Current: $(current), dW: $(N.dW), minmax: $(noise.min), $(noise.max)")
+        println(model.nutrient_series.process.W)
         error("Failed to step nutrient noise. Attempt to decrease range, increase σ, or increase time for bridges.")
     end
     return nothing

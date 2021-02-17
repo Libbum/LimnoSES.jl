@@ -34,7 +34,7 @@ function nutrient_load!(m::ABM, series::Noise)
         m.nutrient_series = Noise(GeometricBrownianMotionProcess(0.0, 0.05, m.year, m.lake.p.nutrients), 1.0, 2.5)
         series = m.nutrient_series
     end
-    step_noise!(series, 1.0, model)
+    step_noise!(series, 1.0, m)
     m.lake.p.nutrients = series.process.curW
 end
 

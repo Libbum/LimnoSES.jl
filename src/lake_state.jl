@@ -54,10 +54,10 @@ function step_noise!(noise::Noise, dt, model)
         end
     end
     if failure == 1000
-        println("Debug. Test: $(haskey(model.properties, :test)), Year: $(model.year)")
-        println("Current: $(current), dW: $(N.dW), minmax: $(noise.min), $(noise.max)")
-        println(model.nutrient_series.process.W)
-        error("Failed to step nutrient noise. Attempt to decrease range, increase σ, or increase time for bridges.")
+        error("Failed to step nutrient noise. Attempt to decrease range, increase σ, or increase time for bridges.\n
+               Debug. Test: $(haskey(model.properties, :test)), Year: $(model.year)\n
+               Current: $(current), dW: $(N.dW), minmax: $(noise.min), $(noise.max)\n
+               $(model.nutrient_series.process.W)")
     end
     return nothing
 end

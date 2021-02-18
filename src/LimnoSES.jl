@@ -3,6 +3,7 @@ module LimnoSES
 using Reexport
 @reexport using Agents, StatsBase, DiffEqNoiseProcess
 using BlackBoxOptim
+using DataInterpolations
 using Parameters
 import OrdinaryDiffEq
 import Random

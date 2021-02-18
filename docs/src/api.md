@@ -2,6 +2,7 @@ None of this is final, but some current public facing functions:
 
 ```@docs
 initialise
+lake_initial_state
 planner
 plan
 policy

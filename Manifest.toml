@@ -133,6 +133,12 @@ git-tree-sha1 = "b0db5579803eabb33f1274ca7ca2f472fdfb7f2a"
 uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 version = "0.22.5"
 
+[[DataInterpolations]]
+deps = ["ChainRulesCore", "LinearAlgebra", "Optim", "RecipesBase", "RecursiveArrayTools", "Reexport"]
+git-tree-sha1 = "75b89fbfa3a5be3ee10890aa6d801214dd808f96"
+uuid = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
+version = "3.3.1"
+
 [[DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
 git-tree-sha1 = "4437b64df1e0adccc3e5d1adbc3ac741095e4677"
@@ -471,6 +477,12 @@ git-tree-sha1 = "71fe65bce368557f5b94079ac709a9c08f46f720"
 uuid = "86cd37e6-c0ff-550b-95fe-21d72c8d4fc9"
 version = "0.2.3"
 
+[[Optim]]
+deps = ["Compat", "FillArrays", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "Parameters", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
+git-tree-sha1 = "3286df38aba45acf7445f3acd87b7b57b7c7feb7"
+uuid = "429524aa-4258-5aef-a3af-852621145aeb"
+version = "1.2.4"
+
 [[OrderedCollections]]
 git-tree-sha1 = "d45739abcfc03b51f6a42712894a593f74c80a23"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
@@ -521,6 +533,12 @@ deps = ["DataAPI"]
 git-tree-sha1 = "0e8f5c428a41a81cd71f76d76f2fc3415fe5a676"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
 version = "1.1.0"
+
+[[PositiveFactorizations]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "17275485f373e6673f7e7f97051f703ed5b15b20"
+uuid = "85a6dd25-e78a-55b7-8502-1745935b8125"
+version = "0.2.4"
 
 [[PrettyTables]]
 deps = ["Crayons", "Formatting", "Markdown", "Reexport", "Tables"]

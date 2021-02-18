@@ -258,6 +258,12 @@ struct T1 <: LakeDefinition end
 struct T2 <: LakeDefinition end
 struct T3 <: LakeDefinition end
 
+"""
+    lake_initial_state(<:LakeDefinition, <:LakeModel)
+
+Provides initial conditions of the lake. Parameters are model dependent.
+For example: `lake_initial_state(Clear, Martin)`.
+"""
 function lake_initial_state(
     ::Type{L},
     ::Type{M};

@@ -22,7 +22,7 @@ function agent_step!(house::Household, model) # yearly
     # Once a year households may update their oss
     if !house.oss && house.information
         #Agent has an understanding of compliance but has not yet upgraded.
-        if rand() < house.compliance
+        if rand(model.rng) < house.compliance
             house.oss = true
             municipality = model[house.municipality]
             if municipality.houseowner_type isa Social
@@ -141,7 +141,7 @@ function threshold_monitor(loss::Float64, municipality::Municipality, model::ABM
     if municipality.threshold_variable isa Nutrients
         return model.lake.p.nutrients > model.critical_nutrients
     elseif municipality.threshold_variable isa Pike
-        trigger = municipality.respond_direct ? 0 : rand()
+        trigger = municipality.respond_direct ? 0 : rand(model.rng)
         return trigger < pike_loss_perception(loss)
     end
     false

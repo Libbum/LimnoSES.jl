@@ -4,6 +4,7 @@ export replicates
 
 function seeded(model)
     m = deepcopy(model)
+    seed!(m)
     if m.nutrient_series isa Noise
         Random.seed!(m.nutrient_series.process.rng, rand(UInt64))
     end

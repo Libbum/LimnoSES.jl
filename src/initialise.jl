@@ -75,16 +75,16 @@ function initialise(;
         # Place houses within municipality jurisdiction
         for _ in 1:houses
             pos = (
-                rand(real_estate_x:min(real_estate_x + juristiction_x, first(griddims))),
-                rand(1:last(griddims)),
+                rand(model.rng, real_estate_x:min(real_estate_x + juristiction_x, first(griddims))),
+                rand(model.rng, 1:last(griddims)),
             )
             while !isempty(pos, model) || pos == municipality_pos
                 pos = (
-                    rand(real_estate_x:(real_estate_x+juristiction_x)),
-                    rand(1:last(griddims)),
+                    rand(model.rng, real_estate_x:(real_estate_x+juristiction_x)),
+                    rand(model.rng, 1:last(griddims)),
                 )
             end
-            compliance = gov.agents_uniform ? rand() : gov.willingness_to_upgrade
+            compliance = gov.agents_uniform ? rand(model.rng) : gov.willingness_to_upgrade
             house =
                 Household(nextid(model), pos, compliance, false, false, 0, municipality_id)
             add_agent_pos!(house, model)

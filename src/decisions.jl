@@ -260,7 +260,7 @@ function calculate_objectives(test)
     if test.nutrient_series isa Noise
         # Don't assume we use the same seed
         seed!(test)
-        Random.seed!(test.nutrient_series.process.rng, rand(UInt64))
+        Random.seed!(test.nutrient_series.process.rng)
     end
 
     Agents.step!(test, agent_step!, model_step!, test.policy.target)

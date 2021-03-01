@@ -73,13 +73,8 @@ end
 Objective function that returns a penalty if vegetation is higher than an operational
 density of 60. Higher densities cause recreational issues that are considered
 unacceptable.
-
-!!! note
-
-    Time horizon is important for this method. It is recommended to set
-    `model.policy.current_term_only = false` or have a large `model.policy.every`.
 """
-appropriate_vegetation(model::ABM) = sum(model.lake.sol[3,:] .> 60.0)
+appropriate_vegetation(model::ABM) = sum(model.lake.sol[3, :] .> 60.0)
 
 ##############################################################
 # Predefined target functions
@@ -99,10 +94,6 @@ an additional check to verify a near-zero first derivative.
 function clear_state(model, s)
     s >= 100 && return true # Escape if we dont converge after 100 years
 
-    B, P, V = model.lake.u
-
-    # Based on bifurcation analysis: for a clear state, we need
-    # V >= 33.4, B < 31.6 and if n > 1 then P > 0.5
     # We also want the system to stabilise a bit, so we wait until the derivatives calm down too.
     # That cutoff can be a complication with noisy nutrients, so we relax the criteria in that case.
     if model.nutrient_series isa Noise &&
@@ -111,10 +102,8 @@ function clear_state(model, s)
     else
         cutoff = 5e-4
     end
-    B < 31.6 &&
-    V >= 33.4 &&
-    (model.lake.p.nutrients > 1.0 ? P > 0.5 : true) &&
-    sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < cutoff
+    sum(abs.(interpolated_position(model.lake.p.nutrients, Clear) .- model.lake.u,)) <
+    cutoff && sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < cutoff
 end
 
 """
@@ -270,7 +259,7 @@ function calculate_objectives(test)
     else
         # Dramatically penalise this result, as it failed to
         # reach the target before cutoff.
-        return map(o -> o(test)*1e2, objectives)
+        return map(o -> o(test) * 1e2, objectives)
     end
 end
 

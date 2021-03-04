@@ -182,9 +182,12 @@ end
 A few keywords that can be sent to the `bboptimize` routine have been made available
 here:
 
-- `max_time = 300`, a hard time limit for the optimiser to run.
+- `max_time = 0.0`, a hard time limit for the optimiser to run (off by default).
+- `max_steps = 10_000_000`, a hard step limit for the optimiser to run.
 - `trace_mode = :compact`, logging output control. Other options are `:silent` and
 `:verbose`.
+
+Note that the standard stopping condition we envoke is `MaxStepsWithoutProgress = 10000`.
 """
 @with_kw mutable struct Decision{F<:Function}
     start::Int = 1 # year when first optimisation is completed
@@ -193,7 +196,8 @@ here:
     objectives::NTuple{N,Tuple{Function,Float64}} where {N} = ((min_time, 1.0),)
     target::F = clear_state
     # Optimiser settings
-    max_time::Float64 = 300.0
+    max_time::Float64 = 0.0
+    max_steps::Int = 10_000_000
     trace_mode::Symbol = :compact
     opt_replicates::Int = 0
     opt_pool::Agents.Distributed.WorkerPool = Agents.Distributed.default_worker_pool()

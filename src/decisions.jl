@@ -306,6 +306,7 @@ function make_decision!(model::ABM)
             aggregator = f -> weightedfitness(f, w),
         ),
         SearchRange = search,
+        MaxSteps = model.policy.max_steps,
         MaxTime = model.policy.max_time,
         TraceMode = model.policy.trace_mode,
         TraceInterval = 10,

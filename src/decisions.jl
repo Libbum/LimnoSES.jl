@@ -74,7 +74,7 @@ Objective function that returns a penalty if vegetation is higher than an operat
 density of 60. Higher densities cause recreational issues that are considered
 unacceptable.
 """
-appropriate_vegetation(model::ABM) = sum(model.lake.sol[3, :] .> 60.0)
+appropriate_vegetation(model::ABM) = sum(model.lake.sol[3,model.lake.sol[3, :] .> 60.0])
 
 ##############################################################
 # Predefined target functions
@@ -308,6 +308,7 @@ function make_decision!(model::ABM)
         SearchRange = search,
         MaxTime = model.policy.max_time,
         TraceMode = model.policy.trace_mode,
+        TraceInterval = 10,
     )
 
     x = best_candidate(result)

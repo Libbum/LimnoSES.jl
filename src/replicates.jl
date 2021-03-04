@@ -11,7 +11,7 @@ function seeded(model)
     return m
 end
 
-function replicates(model::ABM, agent_step!, model_step!, n, replicates; kwargs...)
+function replicates(model::ABM, agent_step!, model_step!, n, replicates; reseed = seeded, kwargs...)
 
     # Generally, it will be better to solve world replicates in paralell since they have a longer spool time.
     # So we steal from the opt_pool as much as possible. It needs to have at least one worker though otherwise it'll block (I think).
@@ -36,7 +36,7 @@ function replicates(model::ABM, agent_step!, model_step!, n, replicates; kwargs.
     end
     println("Using $(length(pool)) on replicates, $(length(model.policy.opt_pool)) on optimiser throws.")
     all_data = Agents.Distributed.pmap(
-        j -> Agents._run!(seeded(model), agent_step!, model_step!, n; kwargs...),
+        j -> Agents._run!(reseed(model), agent_step!, model_step!, n; kwargs...),
         pool,
         1:replicates,
     )

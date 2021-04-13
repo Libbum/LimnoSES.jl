@@ -257,9 +257,9 @@ function calculate_objectives(test)
     if test.policy.target(test, 1)
         return map(o -> o(test), objectives)
     else
-        # Dramatically penalise this result, as it failed to
+        # Penalise this result, as it failed to
         # reach the target before cutoff.
-        return map(o -> o(test) * 1e2, objectives)
+        return map(o -> (o(test) * 10.0)+10.0, objectives)
     end
 end
 

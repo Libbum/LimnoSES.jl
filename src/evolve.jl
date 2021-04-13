@@ -57,7 +57,7 @@ function agent_step!(municipality::Municipality, model)
             #model.outcomes_year_when_informed = model.year - 1 # Netlogo comment: remember this as t1 for later calculation of implementation efficiency
         end
 
-        #TODO: This check now essentially supercedes `municipality.regulate`
+        #TODO: This check now essentially supersedes `municipality.regulate`
         any(
             i -> i isa WastewaterTreatment,
             active_interventions(municipality, model.year),
@@ -67,7 +67,7 @@ end
 
 function model_step!(model)
     # Run the decision optimiser only if this is not a test model.
-    # This check avoids an recusion based stack overflow.
+    # This check avoids an recursion based stack overflow.
     haskey(model.properties, :test) || set_policy!(model)
 
     household_log!(model)
@@ -77,7 +77,7 @@ function model_step!(model)
     nutrient_load!(model, model.nutrient_series)
     OrdinaryDiffEq.u_modified!(model.lake, true)
 
-    # Intervention which neccesitate lake-wide changes
+    # Intervention which necessitate lake-wide changes
     aggregate_regulate!(model)
     model.year += 1
 
@@ -85,7 +85,7 @@ function model_step!(model)
     monitor!(model)
 
     # remember the year when the desired state is restored
-    # look only for this year after degredadion and regulation of system has started
+    # look only for this year after degradation and regulation of system has started
     #TODO: This makes no sense in the context of multiple municipalities
     # if any(m->m.legislation, municipalities(model)) &&
     #     model.outcomes_year_when_desired_pike_is_back == 0
@@ -94,11 +94,44 @@ function model_step!(model)
 end
 
 function set_policy!(model::ABM)
+    apply_knowledge!(model)
     if model.policy.start == model.year || (
         model.year > model.policy.start &&
         mod(model.year - model.policy.start, model.policy.every) == 0
     )
         make_decision!(model)
+    end
+end
+
+function apply_knowledge!(model::ABM)
+    for municipality in municipalities(model)
+        for val in municipality.knowledge
+            #TODO: This is a bit hacky at present.
+            if val == :vegetation_imbalance
+                # We know that it's appropriate to plant in deep turbid states, but
+                # also that bream flips before everything else. This causes a vegetation
+                # imbalance that puts the lake into a dramatically high vegetation state
+                # that cannot be recovered by the optimiser. In addition, planting is no
+                # longer the cheapest or most efficient option in this case, so we swap
+                # all planned Planting interventions to Trawling.
+
+                B, P, V = model.lake.u
+                if B < 40.0 #TODO: Should be far more robust than this.
+                    for plans in values(filter(
+                        i -> i.first >= model.year,
+                        municipality.interventions,
+                    ))
+                        for (idx, p) in enumerate(plans)
+                            if p isa Planting
+                                replace = Trawling(p.rate, p.cost)
+                                deleteat!(plans, idx)
+                                push!(plans, replace)
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 

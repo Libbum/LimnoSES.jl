@@ -37,7 +37,7 @@ function initialise(;
         Union{Household,Municipality},
         space;
         properties = properties,
-        scheduler = by_type((Household, Municipality), true),
+        scheduler = Schedulers.by_type((Household, Municipality), true),
         warn = false,
     )
 

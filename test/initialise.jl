@@ -9,7 +9,6 @@
         :max_sewage_water,
         :nutrient_change,
         :nutrient_series,
-        :nutrient_stabilise,
         :outcomes_upgraded_households_sum,
         :outcomes_year_of_full_upgrade,
         :outcomes_year_when_desired_level_is_back,
@@ -27,6 +26,7 @@
     @test sort(collect(keys(LimnoSES.type2dict(model.policy)))) == [
         :current_term_only,
         :every,
+        :max_steps,
         :max_time,
         :objectives,
         :opt_pool,
@@ -39,6 +39,7 @@
     @test sort(collect(keys(LimnoSES.type2dict(model.policy; prefix = "x")))) == [
         :x_current_term_only,
         :x_every,
+        :x_max_steps,
         :x_max_time,
         :x_objectives,
         :x_opt_pool,
@@ -126,7 +127,8 @@
         default_trawling = (rate = (0.0, 0.01),)
         @test scan(Trawling) == Dict(Trawling => default_trawling)
         @test LimnoSES.default_policy(Trawling) == default_trawling
-        @test scan(Trawling; rate = (0.001, 1.0)) == Dict(Trawling => (rate = (0.001, 1.0),))
+        @test scan(Trawling; rate = (0.001, 1.0)) ==
+              Dict(Trawling => (rate = (0.001, 1.0),))
         default_angling = (rate = (2.25e-3, 2.7e-3),)
         @test scan(Angling) == Dict(Angling => default_angling)
         @test LimnoSES.default_policy(Angling) == default_angling

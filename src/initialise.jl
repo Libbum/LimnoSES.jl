@@ -1,4 +1,4 @@
-export initialise, plan, planner, policy, scan, objective, objectives
+export initialise, generator, plan, planner, policy, scan, objective, objectives
 
 """
     initialise()
@@ -39,6 +39,7 @@ function initialise(;
         properties = properties,
         scheduler = Schedulers.by_type((Household, Municipality), true),
         warn = false,
+        rng = Random.RandomDevice()
     )
 
     total_houses = sum(last(m) for m in values(municipalities))
@@ -98,6 +99,26 @@ function initialise(;
         real_estate_x += juristiction_x
     end
     return model
+end
+
+"""
+    generator(model, replicates)
+
+Creates `replicates` number of models with a different random seed. Useful for `ensemblerun!` calls.
+"""
+function generator(model, replicates)
+    is_device = typeof(model.rng) <: Random.RandomDevice
+    models = [deepcopy(model) for _ in 1:replicates]
+    if is_device
+        for m in models
+            @set m.rng = Random.RandomDevice()
+        end
+    else
+        for m in models
+            seed!(m)
+        end
+    end
+    return models
 end
 
 ## Intervention planner

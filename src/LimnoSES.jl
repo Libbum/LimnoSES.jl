@@ -1,7 +1,9 @@
 module LimnoSES
 
+using Accessors
 using Reexport
-@reexport using Agents, StatsBase, DiffEqNoiseProcess
+@reexport using Agents, DiffEqNoiseProcess
+using StatsBase
 using BlackBoxOptim
 using DataInterpolations
 using Parameters
@@ -19,7 +21,6 @@ include("evolve.jl")
 include("reporting.jl")
 
 include("decisions.jl")
-include("replicates.jl")
 
 end # module
 

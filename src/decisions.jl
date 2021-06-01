@@ -234,11 +234,14 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
     apply_policies!(x, test)
 
     if test.policy.opt_replicates > 0
-        results = Agents.Distributed.pmap(
-            j -> calculate_objectives(deepcopy(test)),
-            test.policy.opt_pool,
-            1:test.policy.opt_replicates,
-        )
+        results = Tuple{Float64,Float64}[]
+        for _ in 1:test.policy.opt_replicates
+            push!(results, calculate_objectives(deepcopy(test)))
+        end
+        #results = Agents.Distributed.pmap(
+            #j -> calculate_objectives(deepcopy(test)),
+            #1:test.policy.opt_replicates,
+        #)
         return Tuple(mean.(Iterators.zip(results...)))
     else
         return calculate_objectives(test)
@@ -248,7 +251,11 @@ end
 function calculate_objectives(test)
     if test.nutrient_series isa Noise
         # Don't assume we use the same seed
-        seed!(test)
+        if typeof(test.rng) isa Random.RandomDevice
+            @set test.rng = Random.RandomDevice()
+        else
+            seed!(test)
+        end
         Random.seed!(test.nutrient_series.process.rng)
     end
 

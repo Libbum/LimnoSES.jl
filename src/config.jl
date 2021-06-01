@@ -202,7 +202,8 @@ Note that the standard stopping condition we envoke is `MaxStepsWithoutProgress 
     max_steps::Int = 10_000_000
     trace_mode::Symbol = :compact
     opt_replicates::Int = 0
-    opt_pool::Agents.Distributed.WorkerPool = Agents.Distributed.default_worker_pool()
+    # Paralellism in BBO is currently not functioning, we don't need the workstealer anyway, so set it to empty
+    #opt_pool = Agents.Distributed.WorkerPool()
 end
 
 # Properties of the experiment. For now this is a drop in for GUI values

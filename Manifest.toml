@@ -5,6 +5,12 @@ git-tree-sha1 = "03e0550477d86222521d254b741d470ba17ea0b5"
 uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 version = "0.3.4"
 
+[[Accessors]]
+deps = ["Compat", "CompositionsBase", "ConstructionBase", "Future", "MacroTools", "Requires", "Test"]
+git-tree-sha1 = "4f55fed2d5b8a8823b2a2ccbf42a576eb502dec9"
+uuid = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
+version = "0.1.2"
+
 [[Adapt]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "f1b523983a58802c4695851926203b36e28f09db"
@@ -101,6 +107,11 @@ version = "3.30.0"
 [[CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
+
+[[CompositionsBase]]
+git-tree-sha1 = "f3955eb38944e5dd0fabf8ca1e267d94941d34a5"
+uuid = "a33af91c-f02d-484b-be07-31d278c5ca2b"
+version = "0.1.0"
 
 [[ConstructionBase]]
 deps = ["LinearAlgebra"]

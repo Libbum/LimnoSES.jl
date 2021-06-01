@@ -37,7 +37,7 @@ function replicates(model::ABM, agent_step!, model_step!, n, replicates; kwargs.
     end
     println("Using $(length(pool)) on replicates, $(length(model.policy.opt_pool)) on optimiser throws.")
     all_data = Agents.Distributed.pmap(
-        j -> Agents._run!(reseed(model), agent_step!, model_step!, n; kwargs...),
+        j -> Agents._run!(seeded(model), agent_step!, model_step!, n; kwargs...),
         pool,
         1:replicates,
     )

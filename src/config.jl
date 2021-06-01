@@ -59,6 +59,7 @@ mutable struct Municipality <: AbstractAgent
     threshold_variable::Threshold
     interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
     policies::Dict{Type{<:Intervention},NamedTuple} # Decision parameters, subject to change
+    knowledge::NTuple{N,Symbol} where {N} # Current options, :vegetation_imbalance
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner
     willingness_to_upgrade::Float64
@@ -77,9 +78,10 @@ end
     respond_direct::Bool = false
     threshold_variable::Threshold = Nutrients()
     interventions::Dict{Integer,Vector{Intervention}} = Dict(-1 => [WastewaterTreatment()]) # Set of interventions municipality will act on
-    # Additions for descision making. Subject to change
+    # Additions for decision making. Subject to change
     policies::Dict{Type{<:Intervention},NamedTuple} =
         Dict{Type{<:Intervention},NamedTuple}()
+    knowledge::NTuple{N,Symbol} where {N} = () # Current options, :vegetation_imbalance
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner = Introverted()
@@ -216,7 +218,7 @@ end
     critical_nutrients::Float64 = 3.0
     recycling_rate::Float64 = 0.1
     max_sewage_water::Float64 = 0.1
-    # Additions for descision making. Subject to change
+    # Additions for decision making. Subject to change
     policy::Decision = Decision()
 end
 
@@ -228,13 +230,13 @@ end
     year_when_desired_pike_is_back = 0
     year_when_desired_level_is_back = 0
     upgraded_households_sum = 0 # cumulatively aggregates the number of upgraded oss each year
-    year_of_full_upgrade = 0 #remeber the year when all households finished their update
+    year_of_full_upgrade = 0 #remember the year when all households finished their update
 end
 
 struct WastewaterTreatment <: Intervention end
 @with_kw_noshow mutable struct Planting <: Intervention
     rate::Float64 = 1e-4
-    cost::Float64 = 1.0 # Cost is given here as a ratio. Defualt is 1:1.
+    cost::Float64 = 1.0 # Cost is given here as a ratio. Default is 1:1.
 end
 @with_kw_noshow mutable struct Trawling <: Intervention
     rate::Float64 = 5e-4

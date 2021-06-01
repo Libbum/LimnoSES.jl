@@ -282,10 +282,12 @@ function make_decision!(model::ABM)
     # of the function guard. The only nuance is to iterate through each municipality
     # in order so that we replicate the ranges of everything correctly.
     search = Tuple{Float64,Float64}[]
+    x0 = Float64[]
     for municipality in municipalities(test)
         for intervention in Iterators.flatten(values(municipality.interventions))
             if haskey(municipality.policies, typeof(intervention))
                 append!(search, collect(municipality.policies[typeof(intervention)]))
+                push!(x0, intervention.rate)
             end
         end
     end
@@ -300,6 +302,7 @@ function make_decision!(model::ABM)
 
     result = bboptimize(
         x -> cost(x, model.lake.u, model.lake.p, test),
+        x0;
         Method = :borg_moea,
         FitnessScheme = ParetoFitnessScheme{objective_dimension}(
             is_minimizing = true,

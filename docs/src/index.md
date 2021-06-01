@@ -171,3 +171,30 @@ hn = plot(
 l = @layout [a; b c]
 plot(hl, hr, hn, layout = l, size = (1000, 700))
 ```
+
+## New to Julia
+
+If you've never used Julia before there are a few things you will need to do to get LimnoSES running.
+
+### Install Julia
+
+First, you'll need the Julia runtime. Install the version for your operating system from [this link](https://julialang.org/downloads/). You'll want the current stable release (v1.6.x at time of writing).
+
+### Adding LimnoSES
+
+Now you'll need to add the LimnoSES package to your system. Open the Julia REPL (short for Read-eval-print loop: it's the Julia command line). On linux and mac systems you can type `julia` at a prompt. For windows you can probably do the same or click an icon.
+
+It's nice to do this from a specific directory you want to work in, so if you're using a prompt: first make one, `cd` into it and then start `julia`. Starting from an icon, try `cd("working/directory/path")`. You can use `pwd()` to make sure you're in the right place.
+
+Now press `]` to get into the REPL's package mode - you should see a `(@v1.6) pkg>` prompt. We're going to create a new project which is called whatever you named your folder.
+Say your folder was called `shallow_lake`, what we want to do at this prompt is type `activate .`. Now your prompt looks like: `(shallow_lake) pkg>`.
+
+Since LimnoSES is in development, we add it like this:
+
+`add https://github.com/Libbum/LimnoSES.jl`
+
+In the near future it will be simpler, just `add LimnoSES`, but not right away.
+
+Once the install is sorted, you can press backspace to get back to the green `julia>` prompt and type `using LimnoSES`. If all goes well you're ready!
+
+Now you can go through the [Quickstart](@ref) section.

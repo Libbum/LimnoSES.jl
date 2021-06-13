@@ -5,6 +5,7 @@
         :identifier,
         :init_nutrients,
         :init_pike_mortality,
+        :knowledge,
         :lake,
         :max_sewage_water,
         :nutrient_change,

@@ -32,7 +32,7 @@ function agent_step!(house::Household, model) # yearly
                 for nid in Iterators.filter(
                     n ->
                         model[n] isa Household &&
-                        model[n].municipality == house.municipality,
+                            model[n].municipality == house.municipality,
                     neighbors,
                 )
                     model[nid].compliance = min(model[nid].compliance * 1.5, 0.99)
@@ -104,29 +104,45 @@ function set_policy!(model::ABM)
 end
 
 function apply_knowledge!(model::ABM)
-    for municipality in municipalities(model)
-        for val in municipality.knowledge
-            #TODO: This is a bit hacky at present.
-            if val == :vegetation_imbalance
-                # We know that it's appropriate to plant in deep turbid states, but
-                # also that bream flips before everything else. This causes a vegetation
-                # imbalance that puts the lake into a dramatically high vegetation state
-                # that cannot be recovered by the optimiser. In addition, planting is no
-                # longer the cheapest or most efficient option in this case, so we swap
-                # all planned Planting interventions to Trawling.
+    for knowledge in model.knowledge
+        apply_knowledge!(model, knowledge)
+    end
+end
 
-                B, P, V = model.lake.u
-                if B < 40.0 #TODO: Should be far more robust than this.
-                    for plans in values(filter(
-                        i -> i.first >= model.year,
-                        municipality.interventions,
-                    ))
-                        for (idx, p) in enumerate(plans)
-                            if p isa Planting
-                                replace = Trawling(p.rate, p.cost)
-                                deleteat!(plans, idx)
-                                push!(plans, replace)
-                            end
+function apply_knowledge!(model, knowledge::VegetationImbalance)
+    # We know that it's appropriate to plant in deep turbid states, but
+    # also that bream flips before everything else. This causes a vegetation
+    # imbalance that puts the lake into a dramatically high vegetation state
+    # that cannot be recovered by the optimiser. In addition, planting is no
+    # longer the cheapest or most efficient option in this case, so we swap
+    # all planned Planting interventions to Trawling.
+
+    knowledge.year_target_reached > 0 && return nothing
+
+    #TODO: This assumes `VegetationImbalance` only applies to Turbid->Clear
+    # which is not explicitly true.
+    if clear_state_region(model, model.year)
+        # We have reached an appropriate state, stop interventions
+        knowledge.year_target_reached = model.year
+        for municipality in municipalities(model)
+            for plans in
+                values(filter(i -> i.first >= model.year, municipality.interventions))
+                for (idx, p) in enumerate(plans)
+                    deleteat!(plans, idx)
+                end
+            end
+        end
+    else
+        B, P, V = model.lake.u
+        if B < knowledge.bream_density_flip
+            for municipality in municipalities(model)
+                for plans in
+                    values(filter(i -> i.first >= model.year, municipality.interventions))
+                    for (idx, p) in enumerate(plans)
+                        if p isa Planting
+                            replace = Trawling(p.rate, p.cost)
+                            deleteat!(plans, idx)
+                            push!(plans, replace)
                         end
                     end
                 end

@@ -16,6 +16,7 @@ export Household,
     WastewaterTreatment,
     Trawling,
     Angling,
+    VegetationImbalance,
     lake_initial_state,
     Clear,
     Turbid,
@@ -32,6 +33,7 @@ export Household,
     LakeParameters
 
 abstract type Intervention end
+abstract type Knowledge end
 abstract type Status end
 abstract type Threshold end
 abstract type HouseOwner end
@@ -59,7 +61,6 @@ mutable struct Municipality <: AbstractAgent
     threshold_variable::Threshold
     interventions::Dict{Integer,Vector{Intervention}} # Set of interventions municipality will act on
     policies::Dict{Type{<:Intervention},NamedTuple} # Decision parameters, subject to change
-    knowledge::NTuple{N,Symbol} where {N} # Current options, :vegetation_imbalance
     agents_uniform::Bool # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner
     willingness_to_upgrade::Float64
@@ -81,7 +82,6 @@ end
     # Additions for decision making. Subject to change
     policies::Dict{Type{<:Intervention},NamedTuple} =
         Dict{Type{<:Intervention},NamedTuple}()
-    knowledge::NTuple{N,Symbol} where {N} = () # Current options, :vegetation_imbalance
     # Related to home owners
     agents_uniform::Bool = false # TODO: This is a poorly named bool. Point here is that if this is true, the agents willingness_to_upgrade will be pulled form a uniform distribution.
     houseowner_type::HouseOwner = Introverted()
@@ -221,6 +221,7 @@ end
     max_sewage_water::Float64 = 0.1
     # Additions for decision making. Subject to change
     policy::Decision = Decision()
+    knowledge::Vector{Knowledge} = Knowledge[] # Current options, :vegetation_imbalance
 end
 
 @with_kw_noshow mutable struct Outcomes
@@ -245,6 +246,11 @@ end
 end
 @with_kw_noshow mutable struct Angling <: Intervention
     rate::Float64 = 2.25e-4 # 10% of default rate
+end
+
+@with_kw_noshow mutable struct VegetationImbalance <: Knowledge
+    bream_density_flip::Float64 = 40.0
+    year_target_reached::Integer = 0
 end
 
 # Lake dynamics

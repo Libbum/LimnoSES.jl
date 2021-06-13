@@ -3,6 +3,7 @@ export min_time,
     min_acceleration,
     min_cost,
     clear_state,
+    clear_state_region,
     managed_clear_eutrophic,
     make_decision!
 
@@ -74,7 +75,7 @@ Objective function that returns a penalty if vegetation is higher than an operat
 density of 60. Higher densities cause recreational issues that are considered
 unacceptable.
 """
-appropriate_vegetation(model::ABM) = sum(model.lake.sol[3,model.lake.sol[3, :] .> 60.0])
+appropriate_vegetation(model::ABM) = sum(model.lake.sol[3, model.lake.sol[3, :].>60.0])
 
 ##############################################################
 # Predefined target functions
@@ -104,6 +105,40 @@ function clear_state(model, s)
     end
     sum(abs.(interpolated_position(model.lake.p.nutrients, Clear) .- model.lake.u,)) <
     cutoff && sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < cutoff
+end
+
+"""
+    clear_state_region(model, s)
+
+Targets the region around the clear lake steady state, with an extra stopping condition if that state was
+not reached within 100 years.
+
+This method does not expect the solution to reach the exact value of the stable bifurcation like
+[`clear_state`](@ref), instead it will exit once various conditions are met that define
+the clear state region, namely: `V >= 33.4, B < 31.6 and if n > 1 then P > 0.5`.
+
+Calculated via instantaneous comparisons at latest model time of all lake variables, with
+an additional check to verify a near-zero first derivative.
+"""
+function clear_state_region(model, s)
+    s >= 100 && return true # Escape if we dont converge after 100 years
+
+    B, P, V = model.lake.u
+
+    # Based on bifurcation analysis: for a clear state, we need
+    # V >= 33.4, B < 31.6 and if n > 1 then P > 0.5
+    # We also want the system to stabilise a bit, so we wait until the derivatives calm down too.
+    # That cutoff can be a complication with noisy nutrients, so we relax the criteria in that case.
+    if model.nutrient_series isa Noise &&
+       hasfield(typeof(model.nutrient_series.process.dist), :σ)
+        cutoff = model.nutrient_series.process.dist.σ
+    else
+        cutoff = 5e-4
+    end
+    B < 31.6 &&
+        V >= 33.4 &&
+        (model.lake.p.nutrients > 1.0 ? P > 0.5 : true) &&
+        sum(abs.(model.lake.sol(model.lake.t, Val{1}))) < cutoff
 end
 
 """
@@ -239,8 +274,8 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
             push!(results, calculate_objectives(deepcopy(test)))
         end
         #results = Agents.Distributed.pmap(
-            #j -> calculate_objectives(deepcopy(test)),
-            #1:test.policy.opt_replicates,
+        #j -> calculate_objectives(deepcopy(test)),
+        #1:test.policy.opt_replicates,
         #)
         return Tuple(mean.(Iterators.zip(results...)))
     else
@@ -266,7 +301,7 @@ function calculate_objectives(test)
     else
         # Penalise this result, as it failed to
         # reach the target before cutoff.
-        return map(o -> (o(test) * 10.0)+10.0, objectives)
+        return map(o -> (o(test) * 10.0) + 10.0, objectives)
     end
 end
 

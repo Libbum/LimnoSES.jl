@@ -117,13 +117,13 @@ function apply_knowledge!(model, knowledge::VegetationImbalance)
     # longer the cheapest or most efficient option in this case, so we swap
     # all planned Planting interventions to Trawling.
 
-    model.knowledge.year_target_reached > 0 && return nothing
+    knowledge.year_target_reached > 0 && return nothing
 
     #TODO: This assumes `VegetationImbalance` only applies to Turbid->Clear
     # which is not explicitly true.
     if clear_state_region(model, model.year)
         # We have reached an appropriate state, stop interventions
-        model.knowledge.year_target_reached = model.year
+        knowledge.year_target_reached = model.year
         for municipality in municipalities(model)
             for plans in
                 values(filter(i -> i.first >= model.year, municipality.interventions))
@@ -134,7 +134,7 @@ function apply_knowledge!(model, knowledge::VegetationImbalance)
         end
     else
         B, P, V = model.lake.u
-        if B < model.knowledge.bream_density_flip
+        if B < knowledge.bream_density_flip
             for municipality in municipalities(model)
                 for plans in
                     values(filter(i -> i.first >= model.year, municipality.interventions))

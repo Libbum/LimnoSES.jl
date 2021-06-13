@@ -64,7 +64,6 @@ function initialise(;
             gov.threshold_variable,
             gov.interventions,
             gov.policies,
-            gov.knowledge,
             gov.agents_uniform,
             gov.houseowner_type,
             gov.willingness_to_upgrade,
@@ -73,11 +72,12 @@ function initialise(;
             houses,
             0,
         )
-        for val in municipality.knowledge
-            if val == :vegetation_imbalance
-                @assert haskey(municipality.policies, Trawling) "Municipality must have a Trawling policy set to use :vegetation_imbalance"
-            end
-        end
+        #TODO: This check needs to be updated now that knowledge is global.
+        #for val in municipality.knowledge
+        #    if val == :vegetation_imbalance
+        #        @assert haskey(municipality.policies, Trawling) "Municipality must have a Trawling policy set to use :vegetation_imbalance"
+        #    end
+        #end
         add_agent_pos!(municipality, model)
         # Place houses within municipality jurisdiction
         for _ in 1:houses

@@ -18,10 +18,12 @@ uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 version = "3.3.1"
 
 [[Agents]]
-deps = ["CSV", "DataFrames", "DataStructures", "Distributed", "GraphRecipes", "LightGraphs", "LinearAlgebra", "OpenStreetMapX", "ProgressMeter", "Random", "RecipesBase", "Requires", "StatsBase"]
-git-tree-sha1 = "36fa29f76685ad6ba7b1b930730e6d04075a6eb3"
+deps = ["CSV", "DataFrames", "DataStructures", "Distributed", "GraphRecipes", "JLD2", "LightGraphs", "LinearAlgebra", "OpenStreetMapX", "ProgressMeter", "Random", "RecipesBase", "Requires", "StatsBase"]
+git-tree-sha1 = "c0d2ace4e04c8cb3b684ff20e3c1abbe9b45c02c"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaDynamics/Agents.jl.git"
 uuid = "46ada45e-f475-11e8-01d0-f70cc89e6671"
-version = "4.3.1"
+version = "4.4.0"
 
 [[ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -245,6 +247,12 @@ git-tree-sha1 = "acebe244d53ee1b461970f8910c235b259e772ef"
 uuid = "9aa1b823-49e4-5ca5-8b0f-3971ec8bab6a"
 version = "0.3.2"
 
+[[FileIO]]
+deps = ["Pkg", "Requires", "UUIDs"]
+git-tree-sha1 = "ca36405da56db2f4730b29cd2ad2bf5869baea3c"
+uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+version = "1.9.1"
+
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays"]
 git-tree-sha1 = "31939159aeb8ffad1d4d8ee44d07f8558273120a"
@@ -367,6 +375,12 @@ version = "0.9.1"
 git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
+
+[[JLD2]]
+deps = ["DataStructures", "FileIO", "MacroTools", "Mmap", "Pkg", "Printf", "Reexport", "TranscodingStreams", "UUIDs"]
+git-tree-sha1 = "a605ca7aac73ccbba3208c49ca4d5eb78c8f4c74"
+uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+version = "0.4.10"
 
 [[JLLWrappers]]
 deps = ["Preferences"]
@@ -846,6 +860,12 @@ deps = ["VectorizationBase"]
 git-tree-sha1 = "28f4295cd761ce98db2b5f8c1fe6e5c89561efbe"
 uuid = "8290d209-cae3-49c0-8002-c8c24d57dab5"
 version = "0.4.4"
+
+[[TranscodingStreams]]
+deps = ["Random", "Test"]
+git-tree-sha1 = "7c53c35547de1c5b9d46a4797cf6d8253807108c"
+uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
+version = "0.9.5"
 
 [[TreeViews]]
 deps = ["Test"]

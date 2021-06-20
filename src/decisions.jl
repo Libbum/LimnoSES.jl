@@ -269,7 +269,7 @@ function cost(x, u0::Vector{Float64}, p::L, test::ABM) where {L<:LakeParameters}
     apply_policies!(x, test)
 
     if test.policy.opt_replicates > 0
-        results = Tuple{Float64,Float64}[]
+        results = NTuple{length(model.policy.objectives),Float64}[]
         for _ in 1:test.policy.opt_replicates
             push!(results, calculate_objectives(deepcopy(test)))
         end

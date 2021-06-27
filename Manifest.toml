@@ -18,10 +18,8 @@ uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 version = "3.3.1"
 
 [[Agents]]
-deps = ["CSV", "DataFrames", "DataStructures", "Distributed", "GraphRecipes", "JLD2", "LightGraphs", "LinearAlgebra", "OpenStreetMapX", "ProgressMeter", "Random", "RecipesBase", "Requires", "StatsBase"]
-git-tree-sha1 = "c0d2ace4e04c8cb3b684ff20e3c1abbe9b45c02c"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaDynamics/Agents.jl.git"
+deps = ["CSV", "DataFrames", "DataStructures", "Distributed", "GraphRecipes", "JLD2", "LightGraphs", "LinearAlgebra", "OpenStreetMapX", "ProgressMeter", "Random", "RecipesBase", "Requires", "Scratch", "StatsBase"]
+git-tree-sha1 = "79887bbc220e2b6876910be35b3a5a3c73e42c99"
 uuid = "46ada45e-f475-11e8-01d0-f70cc89e6671"
 version = "4.4.0"
 
@@ -725,6 +723,12 @@ deps = ["ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "Doc
 git-tree-sha1 = "23b6b88b0c69a1666bd91cbf9d1216588721615c"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 version = "1.13.5"
+
+[[Scratch]]
+deps = ["Dates"]
+git-tree-sha1 = "0b4b7f1393cff97c33891da2a0bf69c6ed241fda"
+uuid = "6c6a2e73-6563-6170-7368-637461726353"
+version = "1.1.0"
 
 [[SentinelArrays]]
 deps = ["Dates", "Random"]
